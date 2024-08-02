@@ -1,0 +1,257 @@
+/* Base styles for mobile first */
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+/* Medium devices (tablets, 768px and up) */
+@media (max-width: 768px) {
+    .hero.card {
+        padding-left: 15px;
+        padding-right: 15px;
+        margin-top: 10px;
+        margin-bottom: 20px;
+    }
+}
+
+
+/* Large devices (desktops, 992px and up) */
+@media (min-width: 992px) {
+    .container {
+        max-width: 970px; /* Adjust as necessary */
+    }
+}
+
+/* Extra large devices (large desktops, 1200px and up) */
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1170px; /* Adjust as necessary */
+    }
+}
+
+
+
+/* General Body Styling */
+body {
+    background-color: #f4f4f4; /* Light grey background for better contrast */
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; /* Modern, readable font */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Main content */
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; /* Align content towards the top */
+    padding-top: 50px; /* Space at the top */
+}
+
+/* Hero Section Styling */
+.hero {
+    background-color: #e9ecef; /* Light gray to maintain a light, airy feel */
+    color: #343a40; /* Dark text for contrast */
+    padding: 40px 0; /* Ample padding for focus */
+}
+
+.hero.card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    border: none; /* Remove default card border if needed */
+    border-radius: 10px; /* Optional: round corners */
+    background: #ffffff; /* Optional: change background color */
+    margin-top: 20px; /* Add some margin to separate from the nav bar */
+    margin-bottom: 40px; /* Space before next content section */
+}
+
+
+.btn-yellow {
+    background-color: #FFD700; /* Vibrant yellow for important call-to-action buttons */
+    color: #000; /* Black text for readability */
+    border-radius: 5px; /* Rounded corners for modern look */
+    padding: 10px 20px; /* Appropriate padding for button size */
+    font-weight: bold; /* Bold text to stand out */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Subtle shadow for depth */
+}
+
+.btn-yellow:hover {
+    background-color: #E6C200; /* Slightly darker yellow on hover */
+}
+
+
+/* Container Styling */
+.container {
+    max-width: 100%;
+    width: 100%;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Form Styling */
+form {
+    background-color: #ffffff; /* White background for the form */
+    border-radius: 8px; /* Rounded corners */
+    padding: 20px; /* Padding inside the form */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Shadow for the form */
+}
+
+/* Section Header Styling */
+h1 {
+    text-align: center;
+    color: #003366; /* Dark blue for professional look */
+}
+
+h2 {
+    color: #FFD700; /* Consistent theme yellow */
+    margin-bottom: 20px; /* Spacing for visual separation */
+}
+
+h3 {
+    color: #666666; /* Subdued color for subheaders */
+    font-size: 1.2rem; /* Smaller font size for hierarchy */
+}
+
+label {
+    display: block;
+    margin: 10px 0 5px;
+    color: #333333;
+}
+
+input[type="text"], input[type="number"], input[type="password"] {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+
+/* Button Styling */
+button,
+.btn-yellow {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background-color: #FFD700 !important; /* Yellow for budget theme */
+    color: #000000 !important; /* Black text color */
+    border: none !important;
+    border-radius: 4px;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
+}
+
+button:hover,
+.btn-yellow:hover {
+    background-color: #E6C200 !important; /* Darker yellow on hover */
+}
+
+/* Recipe Result Styling */
+#recipe-result {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #DFF0D8;
+    border: 1px solid #D6E9C6;
+    color: #3C763D;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced Navbar Styling */
+nav {
+    border-bottom: 2px solid #ddd; /* Subtle separation from content */
+    background-color: #343a40; /* Dark background color */
+}
+
+.navbar-brand {
+    font-size: 1.75rem; /* Slightly larger, more readable size */
+    font-weight: bold; /* Makes the brand name stand out */
+    color: #FFD700; /* Yellow color */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Shadow for the text */
+    transition: transform 0.3s ease; /* Smooth transformation on hover */
+}
+
+.navbar-brand:hover {
+    transform: scale(1.05); /* Slight increase in size on hover for interactive feel */
+    color: #E6C200; /* Darker yellow on hover */
+    text-decoration: underline; /* Underline on hover */
+}
+
+/* Link Styling */
+a {
+    color: #537fbe; /* Uniform color for links */
+    text-decoration: none; /* No underlines to maintain a clean look */
+}
+
+a:hover {
+    color: #23527c; /* Darker shade on hover for interactivity */
+}
+
+/* Footer Styling */
+.footer {
+    background-color: #222; /* Dark footer for contrast */
+    color: #fff; /* White text for readability */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 50px; /* Same height as the navbar */
+    position: relative;
+    bottom: 0;
+    width: 100%;
+    margin-top: auto;
+}
+
+.footer a {
+    color: #f5b82e; /* Bright color for contrast and to match branding */
+    transition: color 0.2s ease; /* Smooth color transition on hover */
+}
+
+.footer a:hover {
+    color: #fff; /* White on hover for emphasis */
+}
+
+.list-inline {
+    padding-left: 0;
+    list-style: none;
+}
+
+.list-inline-item {
+    display: inline;
+    margin-right: 10px;
+}
+
+.list-inline-item a {
+    color: inherit; /* Inherit color from the parent */
+    text-decoration: none; /* No underline */
+}
+
+
+blockquote {
+    padding: 20px; /* Padding for emphasis */
+    background-color: #fff; /* White background to highlight text */
+    border-left: 5px solid #FFD700; /* Theme color bar for recognition */
+    font-style: italic; /* Italicized text for differentiation */
+    margin: 20px 0; /* Margin for proper spacing */
+}
+
+p {
+    line-height: 1.6; /* Line height for readability */
+    color: #333; /* Dark grey for readability */
+}
+
+#dashboard, #insights {
+    background-color: #f9f9f9; /* Light background to differentiate sections */
+    padding: 20px; /* Padding for content separation */
+    border-radius: 8px; /* Rounded corners for modern look */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Subtle shadow for depth */
+    margin-bottom: 20px; /* Bottom margin for spacing */
+}
+
+#dashboard h2, #insights h2 {
+    color: #003366; /* Dark blue for headers within sections */
+}

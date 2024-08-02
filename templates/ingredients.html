@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Ingredients
+{% endblock %}
+
+{% block main %}
+<div class="container">
+    <h2>Ingredients List</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th>Unit</th>
+                <th>Price</th>
+                <th>Price per Unit</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ingredient in ingredients %}
+            <tr>
+                <td>{{ ingredient.name }}</td>
+                <td>{{ ingredient.quantity }}</td>
+                <td>{{ ingredient.quantity_unit }}</td>
+                <td>{{ ingredient.price }}</td>
+                <td id="pricePerUnit{{ loop.index }}">-</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<script src="/static/js/priceCalculations.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    {% for ingredient in ingredients %}
+    document.getElementById('pricePerUnit{{ loop.index }}').innerText =
+        calculatePricePerUnit(
+            {{ ingredient.quantity }},
+            {{ ingredient.price }},
+            '{{ ingredient.quantity_unit }}'
+        );
+    {% endfor %}
+});
+</script>
+{% endblock %}

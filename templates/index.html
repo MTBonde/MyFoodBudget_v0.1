@@ -1,0 +1,83 @@
+{% extends "layout.html" %}
+
+{% block title %}
+MyFoodBudget
+{% endblock %}
+
+{% block main %}
+<!-- Hero Section -->
+<section class="hero card text-center py-5 my-5">
+    <div class="card-body">
+        <h1>Manage Your Food Budget Smartly</h1>
+        <p>Track ingredients, create recipes, and save money effortlessly.</p>
+        {% if session["user_id"] %}
+        <a href="/add_meal" class="btn btn-yellow">Add Meal</a>
+        {% else %}
+        <a href="/register" class="btn btn-yellow">Start Saving Now</a>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Main Content -->
+<div class="container py-5">
+    <!-- Dashboard and Insights -->
+    {% if session["user_id"] %}
+    <div class="row">
+        <div class="col-md-6 text-center mb-3">
+            <section id="dashboard">
+                <h2>Your Dashboard</h2>
+                <p>View recent activities, manage your favorite recipes, and get an overview of your budget.</p>
+                <a href="/dashboard" class="btn btn-info">View Dashboard</a>
+            </section>
+        </div>
+        <div class="col-md-6 text-center mb-3">
+            <section id="insights">
+                <h2>Statistics and Insights</h2>
+                <p>Visualize your spending, track your most used ingredients, and discover ways to save more.</p>
+                <a href="/insights" class="btn btn-secondary">Explore Insights</a>
+            </section>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Who Are We -->
+    <section id="about" class="text-center mb-5">
+        <h2>Who Are We</h2>
+        <p>MyFoodBudget is dedicated to helping you manage your food budget efficiently by keeping track of your ingredients, recipes, and their costs.</p>
+    </section>
+
+    <!-- What Do We Do -->
+    <section id="features" class="text-center mb-5">
+        <h2>What Do We Do</h2>
+        <div class="row">
+            <div class="col-md-4">
+                <h3>Ingredient Management</h3>
+                <p>Keep track of your ingredients, quantities, and prices.</p>
+            </div>
+            <div class="col-md-4">
+                <h3>Recipe Management</h3>
+                <p>Create and manage recipes with automatic cost calculations.</p>
+            </div>
+            <div class="col-md-4">
+                <h3>Cost Tracking</h3>
+                <p>Monitor your food budget effectively.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- How Can We Help You -->
+    <section id="help" class="text-center mb-5">
+        <h2>How Can We Help You</h2>
+        <div class="row">
+            <div class="col-md-6">
+                <h3>User Testimonials</h3>
+                <blockquote>"MyFoodBudget has significantly helped me reduce my grocery expenses."</blockquote>
+            </div>
+            <div class="col-md-6">
+                <h3>Case Studies</h3>
+                <p>Learn how others have optimized their food budget using our app.</p>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

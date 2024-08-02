@@ -1,0 +1,7 @@
+Flask
+Flask-Session
+flask_sqlalchemy
+pytz
+pint
+requests
+sqlalchemy 

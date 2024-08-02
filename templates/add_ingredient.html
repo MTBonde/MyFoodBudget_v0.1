@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Add Ingredient
+{% endblock %}
+
+{% block main %}
+<div class="container">
+    <h2>Add Ingredient</h2>
+    <form action="/add_ingredient" method="post">
+        <div class="mb-3">
+            <label for="name" class="form-label">Name</label>
+            <input type="text" class="form-control" id="name" name="name" required>
+        </div>
+        <div class="mb-3">
+            <label for="Brand" class="form-label">Brand</label>
+            <input type="text" class="form-control" id="brand" name="brand" >
+        </div>
+        <div class="mb-3">
+            <label for="quantity" class="form-label">Quantity</label>
+            <input type="number" class="form-control" id="quantity" name="quantity" min="0.01" step="0.01"  required>
+        </div>
+        <div class="mb-3">
+            <label for="quantity_unit" class="form-label">Unit</label>
+            <select class="form-select" id="quantity_unit" name="quantity_unit">
+                <option disabled selected value="">Choose</option>
+                <option value="grams">grams</option>
+                <option value="kilograms">kilograms</option>
+                <option value="liters">liters</option>
+                <option value="milliliters">milliliters</option>
+                <option value="deciliters">deciliters</option>
+                <option value="centiliters">centiliters</option>
+                <option value="teaspoons">teaspoons</option>
+                <option value="tablespoons">tablespoons</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="price" class="form-label">Price</label>
+            <input type="number" class="form-control" id="price" name="price" min="0.01" step="0.01" required>
+        </div>
+        <div class="mb-3">
+            <label for="price_per_unit" class="form-label">Price per Unit (per kg or per liter)</label>
+            <input type="text" class="form-control" id="price_per_unit" name="price_per_unit" readonly>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Ingredient</button>
+    </form>
+</div>
+<script src="/static/js/priceCalculations.js"></script>
+{% endblock %}

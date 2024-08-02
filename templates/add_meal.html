@@ -1,0 +1,72 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Add Recipe
+{% endblock %}
+
+{% block main %}
+<div class="container">
+    <h2>Add Recipe</h2>
+
+    <!-- Search Bar -->
+    <div class="mb-3">
+        <input type="text" class="form-control" id="search-bar" placeholder="Search ingredients...">
+    </div>
+
+    <!-- Barcode Scanner Button
+    <div class="mb-3">
+        <button type="button" class="btn btn-info" onclick="scanBarcode()">Scan Barcode</button>
+    </div> -->
+
+    <!-- Form for adding a recipe -->
+    <form action="/add_meal" method="post">
+        <div class="mb-3">
+            <label for="name" class="form-label">Name</label>
+            <input type="text" class="form-control" id="name" name="name" required>
+        </div>
+        <div class="mb-3">
+            <label for="instructions" class="form-label">Instructions</label>
+            <textarea class="form-control" id="instructions" name="instructions" rows="3" required></textarea>
+        </div>
+
+        <!-- Ingredients Section -->
+        <div class="mb-3">
+            <h3>Ingredients</h3>
+            <div id="ingredients-list">
+                <!-- Ingredient fields added dynamically -->
+            </div>
+            <button type="button" class="btn btn-secondary" onclick="addExistingIngredient()">Add Existing Ingredient</button>
+            <button type="button" class="btn btn-secondary" onclick="addNewIngredient()">Add New Ingredient</button>
+        </div>
+
+        <!-- Nutritional Progress -->
+        <div class="progress">
+            <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary">Add Recipe</button>
+    </form>
+
+    <!-- Recent Ingredients -->
+    <div class="recent-ingredients">
+        <h4>Recent Ingredients</h4>
+        <!-- Dynamically add recent ingredients here -->
+    </div>
+
+    <!-- Favorites -->
+    <div class="favorites">
+        <h4>Favorites</h4>
+        <!-- Dynamically list favorite ingredients -->
+    </div>
+
+    <!-- Tracked Items -->
+    <div class="tracked-items">
+        <h4>You Have Tracked</h4>
+        <!-- List items tracked for the day -->
+    </div>
+</div>
+
+<script src="/static/js/meal_scripts.js"></script>
+</div>
+{% endblock %}
