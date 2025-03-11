@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+{% block title %}
+    Welcome to MyFoodBudget
+{% endblock %}
+
+{% block main %}
+    <!-- Hero Section -->
+    <section class="hero card text-center py-5 my-5">
+        <div class="card-body">
+            <h1>Manage Your Food Budget Smartly</h1>
+            <p>Track ingredients, create recipes, and save money effortlessly.</p>
+            <!-- Primary CTA for new users -->
+            <a href="/register" class="btn btn-yellow">Start Saving Now</a>
+            <!--  subtle link for returning users -->
+            <p class="mt-3">Already have an account? <a href="/login">Log In</a></p>
+        </div>
+    </section>
+
+
+    <!-- Who We Are -->
+    <section id="about" class="container py-5">
+        <h2>Who We Are</h2>
+        <p>MyFoodBudget is dedicated to helping you manage your food expenses by tracking ingredients, recipes, and costs.</p>
+    </section>
+
+    <!-- What We Do -->
+    <section id="features" class="container py-5">
+        <h2>What We Do</h2>
+        <div class="row">
+            <div class="col-md-4">
+                <h3>Ingredient Management</h3>
+                <p>Keep track of your ingredients, quantities, and prices.</p>
+            </div>
+            <div class="col-md-4">
+                <h3>Recipe Management</h3>
+                <p>Create and manage recipes with automatic cost calculations.</p>
+            </div>
+            <div class="col-md-4">
+                <h3>Cost Tracking</h3>
+                <p>Get an overview of your food budget and discover ways to save money.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- How We Can Help You -->
+    <section id="help" class="container py-5">
+        <h2>How We Can Help You</h2>
+        <p>Discover how MyFoodBudget can make your daily shopping and cooking more cost-effective and streamlined.</p>
+    </section>
+{% endblock %}
