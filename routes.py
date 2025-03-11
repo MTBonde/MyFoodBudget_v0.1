@@ -94,48 +94,59 @@ def init_routes(app):
     @app.route('/add_meal', methods=['GET', 'POST'])
     @login_required
     def add_meal_route():
-        if request.method == 'POST':
+        if request.method == 'POST':        
+    
+            # Process the form data
             name = request.form.get('name')
             instructions = request.form.get('instructions')
-
+    
             existing_ingredient_ids = request.form.getlist('existing_ingredients[]')
             existing_ingredient_quantities = request.form.getlist('existing_ingredient_quantities[]')
             existing_ingredient_units = request.form.getlist('existing_ingredient_units[]')
-
+    
             new_ingredient_names = request.form.getlist('new_ingredient_names[]')
             new_ingredient_quantities = request.form.getlist('new_ingredient_quantities[]')
             new_ingredient_units = request.form.getlist('new_ingredient_units[]')
             new_ingredient_prices = request.form.getlist('new_ingredient_prices[]')
-
+    
             ingredients = []
-
+    
             # Process existing ingredients
             for i in range(len(existing_ingredient_ids)):
-                if existing_ingredient_ids[i]:
-                    ingredient_id = int(existing_ingredient_ids[i])
-                    quantity = float(existing_ingredient_quantities[i])
+                if existing_ingredient_ids[i] and existing_ingredient_quantities[i]:
+                    try:
+                        ingredient_id = int(existing_ingredient_ids[i])
+                        quantity = float(existing_ingredient_quantities[i])
+                    except ValueError as e:
+                        print("Conversion error for existing ingredient:", e)
+                        continue
                     unit = existing_ingredient_units[i]
                     price = next((ing.price for ing in get_all_ingredients() if ing.id == ingredient_id), 0)
                     ingredients.append({'id': ingredient_id, 'quantity': quantity, 'quantity_unit': unit, 'price': price})
-
+    
             # Process new ingredients
             for i in range(len(new_ingredient_names)):
-                name = new_ingredient_names[i]
-                quantity = float(new_ingredient_quantities[i])
-                unit = new_ingredient_units[i]
-                price = float(new_ingredient_prices[i])
-                new_ingredient = create_ingredient(name, quantity, unit, price)
-                if new_ingredient:
-                    ingredients.append({'id': new_ingredient.id, 'quantity': quantity, 'quantity_unit': unit, 'price': price})
-
+                if new_ingredient_names[i] and new_ingredient_quantities[i]:
+                    try:
+                        quantity = float(new_ingredient_quantities[i])
+                        price = float(new_ingredient_prices[i])
+                    except ValueError as e:
+                        print("Conversion error for new ingredient:", e)
+                        continue
+                    unit = new_ingredient_units[i]
+                    new_ingredient = create_ingredient(new_ingredient_names[i], quantity, unit, price)
+                    if new_ingredient:
+                        ingredients.append({'id': new_ingredient.id, 'quantity': quantity, 'quantity_unit': unit, 'price': price})         
+    
             if create_recipe(name, instructions, ingredients):
                 return redirect(url_for('recipes'))
             else:
                 return apology('Error adding recipe', 400)
-
+    
         ingredients_list = get_all_ingredients()
         ingredients = [{'id': ing.id, 'name': ing.name, 'price': ing.price} for ing in ingredients_list]
         return render_template('add_meal.html', ingredients=ingredients)
+
 
 
     @app.route('/recipes')
