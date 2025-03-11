@@ -10,10 +10,14 @@ from services import get_all_ingredients, get_all_recipes, get_all_recipes_with_
 
 def init_routes(app):
     @app.route('/')
-    @login_required
     def home():
-        user_id = session.get('user_id')
-        return render_template("index.html", user=user_id)
+        if 'user_id' in session:
+            # If user is logged in, display the dashboard/home page
+            return render_template("index.html", user=session.get('user_id'))
+        else:
+            # If user is not logged in, display the public landing page
+            return render_template("landing.html")
+
 
 
     # registration route
@@ -130,7 +134,8 @@ def init_routes(app):
                 return apology('Error adding recipe', 400)
 
         ingredients_list = get_all_ingredients()
-        return render_template('add_meal.html', ingredients=ingredients_list)
+        ingredients = [{'id': ing.id, 'name': ing.name, 'price': ing.price} for ing in ingredients_list]
+        return render_template('add_meal.html', ingredients=ingredients)
 
 
     @app.route('/recipes')

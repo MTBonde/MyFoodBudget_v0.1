@@ -3,7 +3,6 @@
 from config import DevelopmentConfig
 from db_init import initialize_database
 from flask import Flask, g, session
-from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session
 from extensions import db
 

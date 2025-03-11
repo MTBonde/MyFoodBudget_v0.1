@@ -1,7 +1,9 @@
-Flask
+Flask~=3.0.3
 Flask-Session
 flask_sqlalchemy
-pytz
-pint
-requests
-sqlalchemy 
+pytz~=2024.1
+pint~=0.24.3
+requests~=2.32.3
+sqlalchemy~=2.0.31
+
+Werkzeug~=3.0.3
