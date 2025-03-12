@@ -26,12 +26,26 @@
                     <!-- Ingredients Section -->
                     <div class="mb-4">
                         <h4>Ingredients</h4>
-                        <div id="ingredients-list">
-                            <!-- Ingredient fields added dynamically will appear here -->
-                        </div>
+                        <table id="ingredients-table" class="table">
+                            <thead>
+                            <tr>
+                                <th>Ingredient Name</th>
+                                <th>Quantity Purchased</th>
+                                <th>Unit</th>
+                                <th>Price at Purchase</th>
+                                <th>Quantity Used</th>
+                                <th>Used Unit</th>
+                                <th>Total Cost</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <!-- Rækker til ingredienser tilføjes dynamisk her -->
+                            </tbody>
+                        </table>
                         <div class="d-flex gap-2 mb-3">
-                            <button type="button" class="btn btn-secondary" onclick="addExistingIngredient()">Add Existing Ingredient</button> 
-                            <button type="button" class="btn btn-secondary" onclick="addNewIngredient()">Add New Ingredient</button>
+                            <button type="button" class="btn btn-secondary" onclick="addExistingIngredientRow()">Add Existing Ingredient</button>
+                            <button type="button" class="btn btn-secondary" onclick="addNewIngredientRow()">Add New Ingredient</button>
                         </div>
                     </div>
 
@@ -39,7 +53,6 @@
                     <div class="mb-4 text-center">
                         <h5>Total Recipe Cost: <span id="total-cost">0.00</span></h5>
                     </div>
-
 
                     <!-- Submit Button -->
                     <div class="text-center">
@@ -58,7 +71,6 @@
                         Recent Ingredients
                     </div>
                     <div class="card-body">
-                        <!-- Dynamic content can be inserted here -->
                         <p>No recent ingredients to display.</p>
                     </div>
                 </div>
@@ -70,7 +82,6 @@
                         Favorites
                     </div>
                     <div class="card-body">
-                        <!-- Dynamic content can be inserted here -->
                         <p>No favorites yet.</p>
                     </div>
                 </div>
@@ -82,7 +93,6 @@
                         You Have Tracked
                     </div>
                     <div class="card-body">
-                        <!-- Dynamic content can be inserted here -->
                         <p>No tracked items available.</p>
                     </div>
                 </div>

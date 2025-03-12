@@ -29,6 +29,11 @@ Recipes
                         {% endfor %}
                     </ul>
                 </td>
+                <td>
+                    <form action="/delete_recipe/{{ recipe.id }}" method="post" onsubmit="return confirm('Are you sure you want to delete this recipe?');">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </td>
             </tr>
             {% endfor %}
         </tbody>

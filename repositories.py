@@ -190,3 +190,19 @@ def get_all_recipes_with_ingredients_from_db():
         })
 
     return recipes_with_ingredients
+
+def delete_recipe_from_db(recipe_id):
+    recipe = Recipe.query.get(recipe_id)
+    if recipe:
+        db.session.delete(recipe)
+        db.session.commit()
+        return True
+    return False
+
+def delete_ingredient_from_db(ingredient_id):
+    ingredient = Ingredient.query.get(ingredient_id)
+    if ingredient:
+        db.session.delete(ingredient)
+        db.session.commit()
+        return True
+    return False
