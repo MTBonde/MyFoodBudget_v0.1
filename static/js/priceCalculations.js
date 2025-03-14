@@ -47,3 +47,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('[data-ingredient]').forEach((element) => {
+        const quantity = parseFloat(element.getAttribute('data-quantity'));
+        const price = parseFloat(element.getAttribute('data-price'));
+        const unit = element.getAttribute('data-unit');
+        element.innerText = calculatePricePerUnit(quantity, price, unit);
+    });
+});

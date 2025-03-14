@@ -29,9 +29,16 @@ Recipes
                         {% endfor %}
                     </ul>
                 </td>
+                <td>
+                    <form action="/delete_recipe/{{ recipe.id }}" method="post" class="delete-form">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+    <script src="/static/js/deleteConfirmation.js"></script>
 {% endblock %}
+

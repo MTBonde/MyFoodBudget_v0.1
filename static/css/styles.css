@@ -132,6 +132,16 @@ input[type="text"], input[type="number"], input[type="password"] {
 }
 
 /* Button Styling */
+button.btn-danger {
+    background-color: #dc3545 !important; /* Red background */
+    color: #ffffff !important;           /* White text */
+}
+
+button.btn-danger:hover {
+    background-color: #c82333 !important; /* A slightly darker red on hover */
+}
+
+
 button,
 .btn-yellow {
     display: block;
