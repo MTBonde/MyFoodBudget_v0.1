@@ -30,7 +30,7 @@ Recipes
                     </ul>
                 </td>
                 <td>
-                    <form action="/delete_recipe/{{ recipe.id }}" method="post" onsubmit="return confirm('Are you sure you want to delete this recipe?');">
+                    <form action="/delete_recipe/{{ recipe.id }}" method="post" class="delete-form">
                         <button type="submit" class="btn btn-danger">Delete</button>
                     </form>
                 </td>
@@ -39,4 +39,6 @@ Recipes
         </tbody>
     </table>
 </div>
+    <script src="/static/js/deleteConfirmation.js"></script>
 {% endblock %}
+
