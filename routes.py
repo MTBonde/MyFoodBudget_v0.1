@@ -162,13 +162,13 @@ def init_routes(app):
         } for ing in ingredients_list]
         return render_template('add_meal.html', ingredients=ingredients)
 
-    @app.route('/recipes', methods=['POST'])
+    @app.route('/recipes')
     @login_required
     def recipes():
         recipes_list = get_all_recipes_with_ingredients()
         return render_template('recipes.html', recipes=recipes_list)
 
-    @app.route('/ingredients', methods=['POST'])
+    @app.route('/ingredients')
     @login_required
     def ingredients():
         ingredients_list = get_all_ingredients()
