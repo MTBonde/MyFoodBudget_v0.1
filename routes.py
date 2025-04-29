@@ -7,7 +7,9 @@ from services import (
     create_recipe,
     get_all_ingredients,
     get_all_recipes,
-    get_all_recipes_with_ingredients, delete_recipe_service, delete_ingredient_service
+    get_all_recipes_with_ingredients, 
+    delete_recipe_service, 
+    delete_ingredient_service
 )
 
 def init_routes(app):
@@ -160,13 +162,13 @@ def init_routes(app):
         } for ing in ingredients_list]
         return render_template('add_meal.html', ingredients=ingredients)
 
-    @app.route('/recipes')
+    @app.route('/recipes', methods=['POST'])
     @login_required
     def recipes():
         recipes_list = get_all_recipes_with_ingredients()
         return render_template('recipes.html', recipes=recipes_list)
 
-    @app.route('/ingredients')
+    @app.route('/ingredients', methods=['POST'])
     @login_required
     def ingredients():
         ingredients_list = get_all_ingredients()
