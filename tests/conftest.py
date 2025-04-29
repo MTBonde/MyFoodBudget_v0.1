@@ -1,5 +1,5 @@
 """
-conftest.py = Pytest configuration file
+conftest.py: Pytest configuration file
 
 This file defines shared fixtures that are automatically available to all test files
 in the same directory and subdirectories.
