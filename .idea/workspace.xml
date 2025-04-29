@@ -5,9 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4811ab8a-a8c1-40a8-9365-7fe117e2ed87" name="Changes" comment="Moved development to pycharm">
-      <change afterPath="$PROJECT_DIR$/tests/test_ingredient_service.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_userauth.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_userauth.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/tasks.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/tasks.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
