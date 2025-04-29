@@ -24,33 +24,53 @@
 ## Function Structure
 
 - Each test must be structured using AAA:
-  - **Arrange**: Set up all variables, mocks, and inputs.
-  - **Act**: Perform a single action (e.g., call the function under test).
-  - **Assert**: Verify the expected result.
-
+  ```
+  ARRANGE: Set up all variables, mocks, and inputs.
+  ACT: Perform a single action (e.g., call the function under test).
+  ASSERT: Verify the expected result.
+  ```
+- Use the following block-style docstring template at the top of each test:
+  ```python
+  """
+  ARRANGE: <what you prepared>
+  ACT: <what you did>
+  ASSERT: <what you expect>
+  """
+  ```
 - Keep all variables and test inputs in the Arrange phase.
 - Avoid defining or changing test inputs during the Act phase.
+- No magic numbers in the Act phase: declare all inputs (including IDs and constants) in the Arrange section.
 
 ## Comments and Documentation
 
 - Each test function should have a short docstring explaining the purpose of the test and outlining the AAA structure.
-- Use section comments (`# Arrange`, `# Act`, `# Assert`) to clarify the test layout.
+- Use triple-quoted strings for inline comments and docstrings, for example:
+  ```python
+  """
+  Setup mock return values and test inputs.
+  """
+  ```
+- Use section comments in code to mark AAA phases:
+  ```python
+  # Arrange
+  # Act
+  # Assert
+  ```
 
 ## File Organization
 
 - Group test files by functionality or service (one concern per file).
 - Use a consistent directory layout such as:
-
-```
-/tests
-    test_userauth.py
-    test_ingredient_service.py
-    test_recipe_service.py
-    test_routes_auth.py
-    test_routes_ingredient.py
-    test_routes_recipe.py
-    conftest.py
-```
+  ```
+  /tests
+      test_userauth.py
+      test_ingredient_service.py
+      test_recipe_service.py
+      test_routes_auth.py
+      test_routes_ingredient.py
+      test_routes_recipe.py
+      conftest.py
+  ```
 
 ## Design Discipline
 
@@ -58,3 +78,4 @@
 - Reserve integration tests for route and database-level behavior.
 - Avoid duplicate assertions unless explicitly needed.
 - Prefer clarity and maintainability over test cleverness.
+

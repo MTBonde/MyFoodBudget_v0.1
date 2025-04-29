@@ -25,9 +25,18 @@ This document contains a prioritized list of tasks for improving the MyFoodBudge
    - Optimize database queries and indexes
 
 5. [ ] Implement unit and integration testing
-   - Set up pytest framework
-   - Create test fixtures and mocks
-   - Implement tests for all core functionality
+    - [x] Set up pytest framework
+    - [x] Create test fixtures and mocks
+    - [ ] Implement tests for all core functionality
+        - [x] `test_userauth.py`
+        - [ ] `test_ingredient_service.py`
+        - [ ] `test_recipe_service.py`
+        - [ ] `test_ingredient_repo.py`
+        - [ ] `test_recipe_repo.py`
+        - [ ] `test_routes_auth.py`
+        - [ ] `test_routes_ingredient.py`
+        - [ ] `test_routes_recipe.py`
+
 
 ## Code-Level Improvements
 
