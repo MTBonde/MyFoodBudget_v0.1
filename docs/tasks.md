@@ -29,7 +29,7 @@ This document contains a prioritized list of tasks for improving the MyFoodBudge
     - [x] Create test fixtures and mocks
     - [ ] Implement tests for all core functionality
         - [x] `test_userauth.py`
-        - [ ] `test_ingredient_service.py`
+        - [x] `test_ingredient_service.py`
         - [ ] `test_recipe_service.py`
         - [ ] `test_ingredient_repo.py`
         - [ ] `test_recipe_repo.py`
