@@ -44,7 +44,7 @@ def find_by_username(username):
     return User.query.filter_by(username=username).first()
 
 
-def add_ingredient(name, quantity, quantity_unit, price):
+def add_ingredient(name, quantity, quantity_unit, price, barcode=None, brand=None):
     """
     Adds a new ingredient to the database.
     Args:
@@ -52,11 +52,13 @@ def add_ingredient(name, quantity, quantity_unit, price):
         quantity (float): The amount of the ingredient.
         quantity_unit (str): The unit of measurement for the quantity (e.g., kg, g, l).
         price (float): The price of the ingredient.
+        barcode (str, optional): The barcode of the ingredient.
+        brand (str, optional): The brand of the ingredient.
     Returns:
         ingredient (Ingredient): The newly created ingredient object if successful, None otherwise.
     """
     #quantity, unit = convert_to_standard_unit(quantity, quantity_unit)
-    new_ingredient = Ingredient(name=name, quantity=quantity, quantity_unit=quantity_unit, price=price)
+    new_ingredient = Ingredient(name=name, quantity=quantity, quantity_unit=quantity_unit, price=price, barcode=barcode, brand=brand)
     try:
         db.session.add(new_ingredient)
         db.session.commit()
@@ -206,3 +208,39 @@ def delete_ingredient_from_db(ingredient_id):
         db.session.commit()
         return True
     return False
+
+
+def find_ingredient_by_barcode(barcode):
+    """
+    Finds an ingredient by its barcode.
+    Args:
+        barcode (str): The barcode to search for.
+    Returns:
+        Ingredient: The ingredient object if found, None otherwise.
+    """
+    return Ingredient.query.filter_by(barcode=barcode).first()
+
+
+def barcode_exists(barcode):
+    """
+    Checks if a barcode already exists in the database.
+    Args:
+        barcode (str): The barcode to check.
+    Returns:
+        bool: True if the barcode exists, False otherwise.
+    """
+    return Ingredient.query.filter_by(barcode=barcode).first() is not None
+
+
+def search_ingredients_by_barcode_or_name(search_term):
+    """
+    Searches for ingredients by barcode or name.
+    Args:
+        search_term (str): The term to search for (barcode or name).
+    Returns:
+        List[Ingredient]: A list of matching ingredients.
+    """
+    return Ingredient.query.filter(
+        (Ingredient.barcode.like(f'%{search_term}%')) |
+        (Ingredient.name.like(f'%{search_term}%'))
+    ).all()

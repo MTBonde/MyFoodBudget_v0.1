@@ -10,33 +10,42 @@ Add Ingredient
     <form action="/add_ingredient" method="post">
         <div class="mb-3">
             <label for="name" class="form-label">Name</label>
-            <input type="text" class="form-control" id="name" name="name" required>
+            <input type="text" class="form-control" id="name" name="name" value="{{ name or '' }}" required>
         </div>
         <div class="mb-3">
             <label for="Brand" class="form-label">Brand</label>
-            <input type="text" class="form-control" id="brand" name="brand" >
+            <input type="text" class="form-control" id="brand" name="brand" value="{{ brand or '' }}">
+        </div>
+        <div class="mb-3">
+            <label for="barcode" class="form-label">Barcode</label>
+            <div class="input-group">
+                <input type="text" class="form-control" id="barcode" name="barcode" value="{{ barcode or '' }}" placeholder="Scan or enter barcode">
+                <button type="button" class="btn btn-outline-secondary" id="scanBarcodeBtn" data-bs-toggle="modal" data-bs-target="#scannerModal">
+                    <i class="bi bi-camera"></i> Scan
+                </button>
+            </div>
         </div>
         <div class="mb-3">
             <label for="quantity" class="form-label">Quantity</label>
-            <input type="number" class="form-control" id="quantity" name="quantity" min="0.01" step="0.01"  required>
+            <input type="number" class="form-control" id="quantity" name="quantity" value="{{ quantity or '' }}" min="0.01" step="0.01" required>
         </div>
         <div class="mb-3">
             <label for="quantity_unit" class="form-label">Unit</label>
             <select class="form-select" id="quantity_unit" name="quantity_unit">
-                <option disabled selected value="">Choose</option>
-                <option value="grams">grams</option>
-                <option value="kilograms">kilograms</option>
-                <option value="liters">liters</option>
-                <option value="milliliters">milliliters</option>
-                <option value="deciliters">deciliters</option>
-                <option value="centiliters">centiliters</option>
-                <option value="teaspoons">teaspoons</option>
-                <option value="tablespoons">tablespoons</option>
+                <option disabled {% if not quantity_unit %}selected{% endif %} value="">Choose</option>
+                <option value="g" {% if quantity_unit == 'g' %}selected{% endif %}>grams</option>
+                <option value="kg" {% if quantity_unit == 'kg' %}selected{% endif %}>kilograms</option>
+                <option value="l" {% if quantity_unit == 'l' %}selected{% endif %}>liters</option>
+                <option value="ml" {% if quantity_unit == 'ml' %}selected{% endif %}>milliliters</option>
+                <option value="cl" {% if quantity_unit == 'cl' %}selected{% endif %}>centiliters</option>
+                <option value="unit" {% if quantity_unit == 'unit' %}selected{% endif %}>units</option>
+                <option value="teaspoons" {% if quantity_unit == 'teaspoons' %}selected{% endif %}>teaspoons</option>
+                <option value="tablespoons" {% if quantity_unit == 'tablespoons' %}selected{% endif %}>tablespoons</option>
             </select>
         </div>
         <div class="mb-3">
             <label for="price" class="form-label">Price</label>
-            <input type="number" class="form-control" id="price" name="price" min="0.01" step="0.01" required>
+            <input type="number" class="form-control" id="price" name="price" value="{{ price or '' }}" min="0.01" step="0.01" required>
         </div>
         <div class="mb-3">
             <label for="price_per_unit" class="form-label">Price per Unit (per kg or per liter)</label>
@@ -45,5 +54,6 @@ Add Ingredient
         <button type="submit" class="btn btn-primary">Add Ingredient</button>
     </form>
 </div>
+
 <script src="/static/js/priceCalculations.js"></script>
 {% endblock %}

@@ -11,6 +11,9 @@
 
     <link href="/static/css/styles.css" rel="stylesheet">
     
+    <!-- QuaggaJS for barcode scanning -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+    
     <title>MyFoodBudget: {% block title %}{% endblock %}</title>
 </head>
 
@@ -72,6 +75,117 @@
         </div>
     </footer>
 
+    <!-- Barcode Scanner Modal -->
+    <div class="modal fade" id="scannerModal" tabindex="-1" aria-labelledby="scannerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="scannerModalLabel">Scan Barcode</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="scanner-container" style="position: relative;">
+                        <div id="scanner" style="width: 100%; height: 300px;"></div>
+                        <div id="scanner-status" class="mt-2">
+                            <p class="text-muted">Point your camera at a barcode to scan</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const scannerModal = document.getElementById('scannerModal');
+        const scannerStatus = document.getElementById('scanner-status');
+        let scannerInitialized = false;
+
+        // Initialize scanner when modal opens
+        scannerModal.addEventListener('shown.bs.modal', function() {
+            if (!scannerInitialized) {
+                initBarcodeScanner();
+            }
+        });
+
+        // Stop scanner when modal closes
+        scannerModal.addEventListener('hidden.bs.modal', function() {
+            if (scannerInitialized) {
+                Quagga.stop();
+                scannerInitialized = false;
+            }
+        });
+
+        function initBarcodeScanner() {
+            Quagga.init({
+                inputStream: {
+                    name: "Live",
+                    type: "LiveStream",
+                    target: document.querySelector('#scanner'),
+                    constraints: {
+                        width: 640,
+                        height: 480,
+                        facingMode: "environment" // Use back camera on mobile
+                    }
+                },
+                decoder: {
+                    readers: [
+                        "code_128_reader",
+                        "ean_reader",
+                        "ean_8_reader",
+                        "code_39_reader",
+                        "code_39_vin_reader",
+                        "codabar_reader",
+                        "upc_reader",
+                        "upc_e_reader"
+                    ]
+                },
+                locate: true,
+                locator: {
+                    patchSize: "medium",
+                    halfSample: true
+                }
+            }, function(err) {
+                if (err) {
+                    console.error('QuaggaJS initialization failed:', err);
+                    scannerStatus.innerHTML = '<p class="text-danger">Camera access failed. Please allow camera permissions and try again.</p>';
+                    return;
+                }
+                console.log("QuaggaJS initialization complete");
+                scannerInitialized = true;
+                Quagga.start();
+                scannerStatus.innerHTML = '<p class="text-success">Scanner ready - point camera at barcode</p>';
+            });
+
+            // Handle barcode detection
+            Quagga.onDetected(function(data) {
+                const code = data.codeResult.code;
+                console.log('Barcode detected:', code);
+                
+                // Show success message
+                scannerStatus.innerHTML = '<p class="text-success">Barcode scanned: ' + code + '</p>';
+                
+                // Handle different contexts
+                if (document.getElementById('barcode')) {
+                    // Add ingredient page - update barcode field
+                    document.getElementById('barcode').value = code;
+                } else {
+                    // Landing page or other contexts - redirect to add ingredient with barcode
+                    window.location.href = '/add_ingredient?barcode=' + encodeURIComponent(code);
+                }
+                
+                // Close modal after successful scan
+                setTimeout(function() {
+                    const modal = bootstrap.Modal.getInstance(scannerModal);
+                    modal.hide();
+                }, 1500);
+            });
+        }
+    });
+    </script>
 
 </body>
 
