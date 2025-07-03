@@ -34,7 +34,9 @@ def initialize_database():
         name TEXT NOT NULL,
         quantity REAL NOT NULL,
         quantity_unit TEXT NOT NULL,
-        price REAL NOT NULL
+        price REAL NOT NULL,
+        barcode TEXT UNIQUE,
+        brand TEXT
     );
     """)
 

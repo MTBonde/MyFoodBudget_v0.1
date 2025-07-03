@@ -100,7 +100,7 @@ def init_routes(app):
                     flash('This product already exists in your ingredients.', 'warning')
                     return redirect(url_for('ingredients'))
             else:
-                flash('Product not found. Please enter the details manually.', 'info')
+                flash('Product not found. Please enter the details manually.', 'warning')
                 product_data = {'barcode': barcode}
         
         return render_template('add_ingredient.html', **product_data)

@@ -44,13 +44,25 @@
         </div>
     </nav>
 
-    {% if get_flashed_messages() %}
-    <header>
-        <div class="alert alert-primary mb-0 text-center" role="alert">
-            {{ get_flashed_messages() | join(" ") }}
-        </div>
-    </header>
-    {% endif %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <header>
+                {% for category, message in messages %}
+                    {% if category == 'success' %}
+                        <div class="alert alert-success mb-0 text-center" role="alert">{{ message }}</div>
+                    {% elif category == 'danger' %}
+                        <div class="alert alert-danger mb-0 text-center" role="alert">{{ message }}</div>
+                    {% elif category == 'warning' %}
+                        <div class="alert alert-warning mb-0 text-center" role="alert">{{ message }}</div>
+                    {% elif category == 'info' %}
+                        <div class="alert alert-info mb-0 text-center" role="alert">{{ message }}</div>
+                    {% else %}
+                        <div class="alert alert-primary mb-0 text-center" role="alert">{{ message }}</div>
+                    {% endif %}
+                {% endfor %}
+            </header>
+        {% endif %}
+    {% endwith %}
 
     <main class="container py-5 text-center">
         {% block main %}{% endblock %}
@@ -84,11 +96,14 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div id="scanner-container" style="position: relative;">
-                        <div id="scanner" style="width: 100%; height: 300px;"></div>
-                        <div id="scanner-status" class="mt-2">
-                            <p class="text-muted">Point your camera at a barcode to scan</p>
-                        </div>
+                    <div id="scanner-container" style="position: relative; width: 100%; height: 300px; overflow: hidden;">
+                        <div id="scanner" style="width: 100%; height: 100%;"></div>
+                    </div>
+                    <div id="scanner-status" class="mt-2">
+                        <p class="text-muted">Point your camera at a barcode to scan</p>
+                    </div>
+                    <div id="scanning-indicator" class="mt-2" style="display: none;">
+                        <!-- Content will be populated by JavaScript -->
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -103,6 +118,9 @@
         const scannerModal = document.getElementById('scannerModal');
         const scannerStatus = document.getElementById('scanner-status');
         let scannerInitialized = false;
+        let barcodeReadings = [];
+        let readingCount = 0;
+        let scanComplete = false;
 
         // Initialize scanner when modal opens
         scannerModal.addEventListener('shown.bs.modal', function() {
@@ -147,6 +165,12 @@
                 locator: {
                     patchSize: "medium",
                     halfSample: true
+                },
+                debug: {
+                    drawBoundingBox: true,
+                    showFrequency: true,
+                    drawScanline: true,
+                    showPattern: true
                 }
             }, function(err) {
                 if (err) {
@@ -157,32 +181,170 @@
                 console.log("QuaggaJS initialization complete");
                 scannerInitialized = true;
                 Quagga.start();
-                scannerStatus.innerHTML = '<p class="text-success">Scanner ready - point camera at barcode</p>';
+                scannerStatus.style.display = 'none';
+                
+                // Show initial scanning message
+                const scanningIndicator = document.getElementById('scanning-indicator');
+                scanningIndicator.style.display = 'block';
+                scanningIndicator.innerHTML = 
+                    '<div class="d-flex align-items-center justify-content-center">' +
+                    '<div class="spinner-border text-primary me-2" role="status">' +
+                    '<span class="visually-hidden">Loading...</span>' +
+                    '</div>' +
+                    '<span class="text-primary fw-bold">Scanning for barcode... (0/10 readings)</span>' +
+                    '</div>';
+                
+                // Reset reading counters
+                barcodeReadings = [];
+                readingCount = 0;
+                scanComplete = false;
             });
 
-            // Handle barcode detection
+            // Draw detection boxes around potential barcodes
+            Quagga.onProcessed(function(result) {
+                var drawingCtx = Quagga.canvas.ctx.overlay,
+                    drawingCanvas = Quagga.canvas.dom.overlay;
+
+                if (result && drawingCtx && drawingCanvas) {
+                    // Clear the canvas
+                    drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.getAttribute("width")), parseInt(drawingCanvas.getAttribute("height")));
+                    
+                    // Ensure canvas is properly positioned within the scanner container
+                    var scannerContainer = document.getElementById('scanner-container');
+                    
+                    if (drawingCanvas && scannerContainer) {
+                        drawingCanvas.style.position = 'absolute';
+                        drawingCanvas.style.top = '0';
+                        drawingCanvas.style.left = '0';
+                        drawingCanvas.style.width = '100%';
+                        drawingCanvas.style.height = '100%';
+                        drawingCanvas.style.maxWidth = scannerContainer.offsetWidth + 'px';
+                        drawingCanvas.style.maxHeight = scannerContainer.offsetHeight + 'px';
+                        drawingCanvas.style.zIndex = '10';
+                    }
+                    
+                    // Draw detection boxes (potential barcodes)
+                    if (result.boxes && result.boxes.length > 0) {
+                        result.boxes.filter(function (box) {
+                            return box !== result.box;
+                        }).forEach(function (box) {
+                            Quagga.ImageDebug.drawPath(box, {x: 0, y: 1}, drawingCtx, {color: "green", lineWidth: 2});
+                        });
+                    }
+
+                    // Draw the final detection box (main candidate)
+                    if (result.box) {
+                        Quagga.ImageDebug.drawPath(result.box, {x: 0, y: 1}, drawingCtx, {color: "blue", lineWidth: 3});
+                    }
+
+                    // Draw the barcode line (successful read)
+                    if (result.codeResult && result.codeResult.code && result.line) {
+                        Quagga.ImageDebug.drawPath(result.line, {x: 'x', y: 'y'}, drawingCtx, {color: 'red', lineWidth: 4});
+                    }
+                }
+            });
+
+            // Handle barcode detection with validation
             Quagga.onDetected(function(data) {
+                // Prevent processing if scan is already complete
+                if (scanComplete) return;
+                
                 const code = data.codeResult.code;
                 console.log('Barcode detected:', code);
                 
-                // Show success message
-                scannerStatus.innerHTML = '<p class="text-success">Barcode scanned: ' + code + '</p>';
-                
-                // Handle different contexts
-                if (document.getElementById('barcode')) {
-                    // Add ingredient page - update barcode field
-                    document.getElementById('barcode').value = code;
-                } else {
-                    // Landing page or other contexts - redirect to add ingredient with barcode
-                    window.location.href = '/add_ingredient?barcode=' + encodeURIComponent(code);
+                // Basic validation - reject obviously invalid barcodes
+                if (code.length < 8 || code.length > 15) {
+                    console.log('Rejected barcode (invalid length):', code);
+                    return;
                 }
                 
-                // Close modal after successful scan
-                setTimeout(function() {
-                    const modal = bootstrap.Modal.getInstance(scannerModal);
-                    modal.hide();
-                }, 1500);
+                // Add to readings array
+                barcodeReadings.push(code);
+                readingCount++;
+                
+                // Update scanning status
+                document.getElementById('scanning-indicator').innerHTML = 
+                    '<div class="d-flex align-items-center justify-content-center">' +
+                    '<div class="spinner-border text-primary me-2" role="status">' +
+                    '<span class="visually-hidden">Loading...</span>' +
+                    '</div>' +
+                    '<span class="text-primary fw-bold">Reading ' + readingCount + '/10: ' + code + '</span>' +
+                    '</div>';
+                
+                // Check if we have enough readings or reached max attempts
+                if (readingCount >= 10 || hasConsistentReadings()) {
+                    const finalCode = getMostFrequentReading();
+                    
+                    if (finalCode && isValidBarcode(finalCode)) {
+                        // Mark scan as complete to prevent duplicate processing
+                        scanComplete = true;
+                        
+                        // Hide scanning indicator and show success message
+                        document.getElementById('scanning-indicator').style.display = 'none';
+                        scannerStatus.style.display = 'block';
+                        scannerStatus.innerHTML = '<p class="text-success">Barcode confirmed: ' + finalCode + '</p>';
+                        
+                        // Handle different contexts
+                        if (document.getElementById('barcode')) {
+                            // Add ingredient page - update barcode field
+                            document.getElementById('barcode').value = finalCode;
+                        } else {
+                            // Landing page or other contexts - redirect to add ingredient with barcode
+                            window.location.href = '/add_ingredient?barcode=' + encodeURIComponent(finalCode);
+                        }
+                        
+                        // Close modal after successful scan
+                        setTimeout(function() {
+                            const modal = bootstrap.Modal.getInstance(scannerModal);
+                            modal.hide();
+                        }, 1500);
+                    } else {
+                        // No consistent readings found
+                        document.getElementById('scanning-indicator').style.display = 'none';
+                        scannerStatus.style.display = 'block';
+                        scannerStatus.innerHTML = '<p class="text-warning">Could not get consistent barcode reading. Try again with better lighting or angle.</p>';
+                    }
+                }
             });
+            
+            // Validate barcode format
+            function isValidBarcode(code) {
+                // Check for reasonable length (EAN-8, EAN-13, UPC-A, etc.)
+                if (code.length < 8 || code.length > 15) return false;
+                
+                // Check if it's all digits (most barcode formats)
+                if (!/^\d+$/.test(code)) return false;
+                
+                return true;
+            }
+            
+            // Check if we have at least 4 consistent readings (more strict)
+            function hasConsistentReadings() {
+                if (barcodeReadings.length < 4) return false;
+                
+                const counts = {};
+                barcodeReadings.forEach(code => {
+                    counts[code] = (counts[code] || 0) + 1;
+                });
+                
+                return Object.values(counts).some(count => count >= 4);
+            }
+            
+            // Get the most frequently read barcode
+            function getMostFrequentReading() {
+                if (barcodeReadings.length === 0) return null;
+                
+                const counts = {};
+                barcodeReadings.forEach(code => {
+                    counts[code] = (counts[code] || 0) + 1;
+                });
+                
+                const sortedCodes = Object.entries(counts)
+                    .sort((a, b) => b[1] - a[1])
+                    .filter(([code, count]) => count >= 4);
+                
+                return sortedCodes.length > 0 ? sortedCodes[0][0] : null;
+            }
         }
     });
     </script>

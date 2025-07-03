@@ -177,9 +177,13 @@ def parse_quantity_from_text(quantity_text):
     return 1.0, 'unit'
 
 
+# Simple in-memory cache for API results
+_barcode_cache = {}
+
 def lookup_product_by_barcode(barcode):
     """
     Looks up a product by barcode, first checking local database, then OpenFoodFacts.
+    Uses caching to avoid duplicate API calls.
     Args:
         barcode (str): The barcode to look up.
     Returns:
@@ -198,13 +202,19 @@ def lookup_product_by_barcode(barcode):
             'barcode': local_ingredient.barcode
         }
     
-    # If not found locally, try OpenFoodFacts API
+    # Check cache first to avoid duplicate API calls
+    if barcode in _barcode_cache:
+        return _barcode_cache[barcode]
+    
+    # If not found locally or in cache, try OpenFoodFacts API
     api_product = fetch_product_from_openfoodfacts(barcode)
     if api_product:
         api_product['source'] = 'api'
-        return api_product
     
-    return None
+    # Cache the result (even if None) to avoid repeated API calls
+    _barcode_cache[barcode] = api_product
+    
+    return api_product
 
 
 def check_barcode_exists(barcode):
