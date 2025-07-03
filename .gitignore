@@ -214,6 +214,13 @@ db.sqlite3-journal
 instance/
 .webassets-cache
 
+# Flask-Session files (sensitive session data)
+flask_session/
+
+# Application database files
+*.db
+myfoodbudget.db
+
 # Scrapy stuff:
 .scrapy
 
