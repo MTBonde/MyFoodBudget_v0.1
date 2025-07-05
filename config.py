@@ -16,5 +16,9 @@ class DevelopmentConfig(Config):
     DEBUG = True
     PERMANENT_SESSION_LIFETIME = timedelta(minutes=30)
 
-# create testing and production config, when dev is shiftet to that stage
+class TestingConfig(Config):
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    DATABASE = ":memory:"
+    WTF_CSRF_ENABLED = False
 
