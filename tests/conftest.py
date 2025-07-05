@@ -9,6 +9,10 @@ Fixtures defined here do not need to be imported manually in test files.
 """
 
 import pytest
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from models import db
 
 @pytest.fixture(scope="function")
