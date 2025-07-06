@@ -22,4 +22,4 @@ ENV FLASK_ENV=production
 EXPOSE 5000
 
 # Start Flask via custom entrypoint
-CMD ["/entrypoint.sh"]
+CMD ["/app/entrypoint.sh"]

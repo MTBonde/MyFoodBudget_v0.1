@@ -55,7 +55,6 @@ docs/
 
 # CI/CD
 .github/
-Dockerfile
 .dockerignore
 
 # Development
