@@ -18,7 +18,7 @@ def init_routes(app):
         if 'user_id' in session:
             return render_template("index.html", user=session.get('user_id'))
         else:
-            return render_template("Landing.html")
+            return render_template("landing.html")
 
     @app.route("/register", methods=["GET", "POST"])
     def register():
