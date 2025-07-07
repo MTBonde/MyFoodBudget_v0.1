@@ -3,29 +3,65 @@
 function calculatePricePerUnit(quantity, price, unit) {
     let pricePerUnit = 0;
     if (quantity > 0 && price > 0) {
+        let standardQuantity, displayUnit;
+        
+        // Determine unit category and convert to standard units
         switch (unit) {
+            // WEIGHT UNITS - always show "per kg"
+            case 'g':
             case 'grams':
-            case 'milliliters':
-                pricePerUnit = price / (quantity / 1000);
+                standardQuantity = quantity / 1000; // Convert grams to kg
+                displayUnit = ' per kg';
                 break;
+                
+            case 'kg':
             case 'kilograms':
+                standardQuantity = quantity; // Already in kg
+                displayUnit = ' per kg';
+                break;
+                
+            // VOLUME UNITS - always show "per L"
+            case 'ml':
+            case 'milliliters':
+                standardQuantity = quantity / 1000; // Convert ml to L
+                displayUnit = ' per L';
+                break;
+                
+            case 'cl':
+            case 'centiliters':
+                standardQuantity = quantity / 100; // Convert cl to L
+                displayUnit = ' per L';
+                break;
+                
+            case 'l':
             case 'liters':
-                pricePerUnit = price / quantity;
+                standardQuantity = quantity; // Already in L
+                displayUnit = ' per L';
                 break;
+                
+            // COOKING MEASUREMENTS - treat as volume, show "per L"
             case 'teaspoons':
-                pricePerUnit = (price / (quantity / 202)); // Approx. conversion from teaspoons to liters
+                standardQuantity = quantity / TEASPOONS_TO_LITERS_CONVERSION_FACTOR; // Convert teaspoons to L
+                displayUnit = ' per L';
                 break;
+                
             case 'tablespoons':
-                pricePerUnit = (price / (quantity / 67.628)); // Approx. conversion from tablespoons to liters
+                standardQuantity = quantity / 67.628; // Convert tablespoons to L
+                displayUnit = ' per L';
                 break;
+                
+            // COUNT UNITS - show "per unit"
+            case 'unit':
             default:
-                pricePerUnit = price / quantity;
+                standardQuantity = quantity;
+                displayUnit = ' per unit';
                 break;
-            }
-            let pricePerStandardUnit = (unit === 'grams' || unit === 'milliliters') ? ' per kg' : ' per liter';
-            return pricePerUnit.toFixed(2) + pricePerStandardUnit;
         }
-        return ''; // Return an empty string if input is invalid
+        
+        pricePerUnit = price / standardQuantity;
+        return pricePerUnit.toFixed(2) + displayUnit;
+    }
+    return ''; // Return an empty string if input is invalid
 }
 
 document.addEventListener('DOMContentLoaded', function() {

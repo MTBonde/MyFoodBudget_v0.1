@@ -37,6 +37,8 @@ class Ingredient(db.Model):
     quantity = db.Column(db.Float, nullable=False)
     quantity_unit = db.Column(db.Text, nullable=False)
     price = db.Column(db.Float, nullable=False)
+    barcode = db.Column(db.String(50), nullable=True, unique=True, index=True)
+    brand = db.Column(db.String(100), nullable=True)
 
 
 # Recipe model: stores recipes.

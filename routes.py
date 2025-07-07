@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, session, url_for
+from flask import render_template, request, redirect, session, url_for, jsonify, flash
 from helpers import apology, login_required
 from services import (
     authenticate_user,
@@ -9,7 +9,9 @@ from services import (
     get_all_recipes,
     get_all_recipes_with_ingredients, 
     delete_recipe_service, 
-    delete_ingredient_service
+    delete_ingredient_service,
+    lookup_product_by_barcode,
+    check_barcode_exists
 )
 
 def init_routes(app):
@@ -65,14 +67,84 @@ def init_routes(app):
         if request.method == 'POST':
             name = request.form.get('name')
             brand = request.form.get('brand')
+            barcode = request.form.get('barcode')
             quantity = float(request.form.get('quantity'))
             quantity_unit = request.form.get('quantity_unit')
             price = float(request.form.get('price'))
-            if create_ingredient(name, quantity, quantity_unit, price):
+            
+            # Check if barcode already exists (if provided)
+            if barcode and check_barcode_exists(barcode):
+                flash('An ingredient with this barcode already exists.', 'warning')
+                return render_template('add_ingredient.html', 
+                                     name=name, brand=brand, barcode=barcode,
+                                     quantity=quantity, quantity_unit=quantity_unit, price=price)
+            
+            if create_ingredient(name, quantity, quantity_unit, price, barcode, brand):
+                flash('Ingredient added successfully!', 'success')
                 return redirect(url_for('ingredients'))
             else:
                 return apology('Error adding ingredient', 400)
-        return render_template('add_ingredient.html')
+        
+        # Handle GET with barcode parameter (from scanner redirect)
+        barcode = request.args.get('barcode')
+        product_data = {}
+        
+        if barcode:
+            # Try to get product information from barcode
+            product_info = lookup_product_by_barcode(barcode)
+            if product_info:
+                product_data = product_info
+                if product_info['source'] == 'api':
+                    flash(f'Product found: {product_info["name"]}. Please verify and adjust the information.', 'info')
+                else:
+                    flash('This product already exists in your ingredients.', 'warning')
+                    return redirect(url_for('ingredients'))
+            else:
+                flash('Product not found. Please enter the details manually.', 'warning')
+                product_data = {'barcode': barcode}
+        
+        return render_template('add_ingredient.html', **product_data)
+
+    @app.route('/scan_product', methods=['POST'])
+    @login_required
+    def scan_product():
+        """
+        API endpoint for barcode scanning.
+        Accepts a barcode and returns product information.
+        """
+        try:
+            data = request.get_json()
+            barcode = data.get('barcode')
+            
+            if not barcode:
+                return jsonify({'error': 'Barcode is required'}), 400
+            
+            # Check if barcode already exists in our database
+            if check_barcode_exists(barcode):
+                return jsonify({
+                    'status': 'exists',
+                    'message': 'This product already exists in your ingredients.',
+                    'redirect': url_for('ingredients')
+                })
+            
+            # Look up product information
+            product_info = lookup_product_by_barcode(barcode)
+            
+            if product_info:
+                return jsonify({
+                    'status': 'found',
+                    'product': product_info,
+                    'redirect': url_for('add_ingredient_route', barcode=barcode)
+                })
+            else:
+                return jsonify({
+                    'status': 'not_found',
+                    'message': 'Product not found. You can add it manually.',
+                    'redirect': url_for('add_ingredient_route', barcode=barcode)
+                })
+                
+        except Exception as e:
+            return jsonify({'error': f'Server error: {str(e)}'}), 500
 
     @app.route('/add_meal', methods=['GET', 'POST'])
     @login_required
