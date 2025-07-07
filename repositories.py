@@ -229,7 +229,7 @@ def barcode_exists(barcode):
     Returns:
         bool: True if the barcode exists, False otherwise.
     """
-    return Ingredient.query.filter_by(barcode=barcode).first() is not None
+    return db.session.query(db.session.query(Ingredient).filter_by(barcode=barcode).exists()).scalar()
 
 
 def search_ingredients_by_barcode_or_name(search_term):
