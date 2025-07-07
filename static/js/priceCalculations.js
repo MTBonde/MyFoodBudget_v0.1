@@ -41,7 +41,7 @@ function calculatePricePerUnit(quantity, price, unit) {
                 
             // COOKING MEASUREMENTS - treat as volume, show "per L"
             case 'teaspoons':
-                standardQuantity = quantity / 202; // Convert teaspoons to L
+                standardQuantity = quantity / TEASPOONS_TO_LITERS_CONVERSION_FACTOR; // Convert teaspoons to L
                 displayUnit = ' per L';
                 break;
                 
