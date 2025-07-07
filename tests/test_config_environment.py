@@ -15,32 +15,36 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 def test_production_config_detection():
     """Test that production configuration is properly detected"""
     with patch.dict(os.environ, {'FLASK_ENV': 'production'}):
-        # Reload modules to pick up environment change
-        import importlib
-        if 'app_factory' in sys.modules:
-            importlib.reload(sys.modules['app_factory'])
-        
-        from app_factory import create_app
-        app = create_app()
-        
-        assert app.config['DEBUG'] is False
-        assert '/app/data' in app.config['DATABASE']
-        assert 'sqlite:////app/data' in app.config['SQLALCHEMY_DATABASE_URI']
+        # Mock database initialization to avoid file system operations
+        with patch('app_factory.initialize_database'):
+            # Reload modules to pick up environment change
+            import importlib
+            if 'app_factory' in sys.modules:
+                importlib.reload(sys.modules['app_factory'])
+            
+            from app_factory import create_app
+            app = create_app()
+            
+            assert app.config['DEBUG'] is False
+            assert '/app/data' in app.config['DATABASE']
+            assert 'sqlite:////app/data' in app.config['SQLALCHEMY_DATABASE_URI']
 
 
 def test_development_config_detection():
     """Test that development configuration is properly detected"""
     with patch.dict(os.environ, {'FLASK_ENV': 'development'}):
-        # Reload modules to pick up environment change
-        import importlib
-        if 'app_factory' in sys.modules:
-            importlib.reload(sys.modules['app_factory'])
-        
-        from app_factory import create_app
-        app = create_app()
-        
-        assert app.config['DEBUG'] is True
-        assert 'myfoodbudget.db' in app.config['DATABASE']
+        # Mock database initialization to avoid file system operations
+        with patch('app_factory.initialize_database'):
+            # Reload modules to pick up environment change
+            import importlib
+            if 'app_factory' in sys.modules:
+                importlib.reload(sys.modules['app_factory'])
+            
+            from app_factory import create_app
+            app = create_app()
+            
+            assert app.config['DEBUG'] is True
+            assert 'myfoodbudget.db' in app.config['DATABASE']
 
 
 def test_database_initialization_with_temp_directory():
