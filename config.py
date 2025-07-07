@@ -19,8 +19,8 @@ class DevelopmentConfig(Config):
 class ProductionConfig(Config):
     DEBUG = False
     # Use /app/data for persistent storage in Docker
-    SQLALCHEMY_DATABASE_URI = "sqlite:///data/myfoodbudget.db"
-    DATABASE = "data/myfoodbudget.db"
+    SQLALCHEMY_DATABASE_URI = "sqlite:////app/data/myfoodbudget.db"
+    DATABASE = "/app/data/myfoodbudget.db"
     PERMANENT_SESSION_LIFETIME = timedelta(hours=24)
 
 class TestingConfig(Config):
