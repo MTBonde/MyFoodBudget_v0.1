@@ -1,7 +1,12 @@
-import sqlite3
+#!/usr/bin/env python3
+"""
+Database initialization script with environment detection.
+Maintains backward compatibility for tests while avoiding circular imports.
+"""
 import os
 from config import DevelopmentConfig, ProductionConfig, TestingConfig
 
+# Environment detection for test compatibility
 env = os.getenv("FLASK_ENV", "development")
 
 if env == "development":
@@ -13,79 +18,26 @@ else:
 
 DATABASE_URL = config.DATABASE
 
-def initialize_database():
-    conn = None
+def initialize_database_standalone():
+    """
+    Initialize database using SQLAlchemy models via app factory.
+    This function avoids circular imports by importing only when called.
+    """
+    from app_factory import create_app
+    
+    app = create_app()
     try:
-        # Ensure the directory exists for the database file
-        db_dir = os.path.dirname(DATABASE_URL)
-        if db_dir and not os.path.exists(db_dir):
-            os.makedirs(db_dir, exist_ok=True)
-        
-        conn = sqlite3.connect(DATABASE_URL)
-        cursor = conn.cursor()
-
-        # Create users table
-        cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL UNIQUE,
-            hash TEXT NOT NULL, -- Hashed password
-            email TEXT NOT NULL UNIQUE,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        );
-        """)
-
-        # Create indexes for users table
-        cursor.execute("""
-        CREATE UNIQUE INDEX IF NOT EXISTS idx_username ON users (username);
-        """)
-        cursor.execute("""
-        CREATE UNIQUE INDEX IF NOT EXISTS idx_email ON users (email);
-        """)
-
-        # Create ingredients table
-        cursor.execute("""
-        CREATE TABLE IF NOT EXISTS ingredients (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            quantity REAL NOT NULL,
-            quantity_unit TEXT NOT NULL,
-            price REAL NOT NULL
-        );
-        """)
-
-        # Create recipes table
-        cursor.execute("""
-        CREATE TABLE IF NOT EXISTS recipes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            instructions TEXT,
-            total_price REAL
-        );
-        """)
-
-        # Create recipe_ingredients table
-        cursor.execute("""
-        CREATE TABLE IF NOT EXISTS recipe_ingredients (
-            recipe_id INTEGER,
-            ingredient_id INTEGER,
-            quantity REAL NOT NULL,
-            quantity_unit TEXT NOT NULL,
-            PRIMARY KEY (recipe_id, ingredient_id),
-            FOREIGN KEY (recipe_id) REFERENCES recipes(id),
-            FOREIGN KEY (ingredient_id) REFERENCES ingredients(id)
-        );
-        """)
-
-        conn.commit()
-        conn.close()
-        print(f"Database initialized successfully at: {DATABASE_URL}")
-        
-    except Exception as e:
-        print(f"Error during database operations: {e}")
-        if conn:
-            conn.close()
-        raise
+        with app.app_context():
+            from app_factory import initialize_database
+            initialize_database()
+    finally:
+        # Ensure app and all its resources are properly cleaned up
+        try:
+            from extensions import db
+            if hasattr(db, 'engine'):
+                db.engine.dispose()
+        except:
+            pass
 
 if __name__ == "__main__":
-    initialize_database()
+    initialize_database_standalone()

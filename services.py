@@ -49,7 +49,11 @@ def create_recipe(name, instructions, ingredients):
         return None
 
 def get_all_ingredients():
-    return get_all_ingredients_from_db()
+    try:
+        return get_all_ingredients_from_db()
+    except Exception as e:
+        logging.error(f"Error retrieving ingredients: {e}")
+        return []
 
 def get_all_recipes():
     return get_all_recipes_from_db()
@@ -190,17 +194,20 @@ def lookup_product_by_barcode(barcode):
         dict: Product information with 'source' field indicating 'local' or 'api'
     """
     # First check if we have this barcode in our local database
-    local_ingredient = find_ingredient_by_barcode(barcode)
-    if local_ingredient:
-        return {
-            'source': 'local',
-            'name': local_ingredient.name,
-            'brand': local_ingredient.brand,
-            'quantity': local_ingredient.quantity,
-            'quantity_unit': local_ingredient.quantity_unit,
-            'price': local_ingredient.price,
-            'barcode': local_ingredient.barcode
-        }
+    try:
+        local_ingredient = find_ingredient_by_barcode(barcode)
+        if local_ingredient:
+            return {
+                'source': 'local',
+                'name': local_ingredient.name,
+                'brand': local_ingredient.brand,
+                'quantity': local_ingredient.quantity,
+                'quantity_unit': local_ingredient.quantity_unit,
+                'price': local_ingredient.price,
+                'barcode': local_ingredient.barcode
+            }
+    except Exception as e:
+        logging.error(f"Error checking local ingredient by barcode: {e}")
     
     # Check cache first to avoid duplicate API calls
     if barcode in _barcode_cache:
@@ -225,4 +232,8 @@ def check_barcode_exists(barcode):
     Returns:
         bool: True if barcode exists, False otherwise.
     """
-    return barcode_exists(barcode)
+    try:
+        return barcode_exists(barcode)
+    except Exception as e:
+        logging.error(f"Error checking barcode existence: {e}")
+        return False

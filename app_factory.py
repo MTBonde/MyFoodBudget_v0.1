@@ -2,10 +2,38 @@
 
 import os
 from config import DevelopmentConfig, ProductionConfig
-from db_init import initialize_database
 from flask import Flask, g, session
 from flask_session import Session
 from extensions import db
+
+
+def initialize_database():
+    """
+    Initialize database using SQLAlchemy models for consistency between environments.
+    This ensures the same schema is used in both IDE and staging/production.
+    Must be called within an app context.
+    """
+    from models import User, Ingredient, Recipe, RecipeIngredient
+    
+    try:
+        # Create all tables using SQLAlchemy models
+        db.create_all()
+        
+        # Ensure all database connections are properly closed
+        db.session.close()
+        db.engine.dispose()
+        
+        print(f"Database initialized successfully using SQLAlchemy models")
+        
+    except Exception as e:
+        print(f"Error during database initialization: {e}")
+        # Ensure cleanup even on error
+        try:
+            db.session.close()
+            db.engine.dispose()
+        except:
+            pass
+        raise
 
 
 def create_app(config_class=None):
