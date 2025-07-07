@@ -1,3 +1,7 @@
 #!/bin/bash
+
+echo "Initializing DB if needed..."
 python db_init.py
-exec flask run --host=0.0.0.0 --port=5000
+
+echo "Starting app..."
+exec python app.py
