@@ -3,6 +3,10 @@ Unit tests for ingredient services using pytest, mocks, and AAA pattern.
 """
 
 import pytest
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from unittest.mock import patch, MagicMock
 from services import create_ingredient, get_all_ingredients, delete_ingredient_service
 

@@ -1,16 +1,23 @@
 # app_factory.py; Factory pattern for initializin app, and avoiding circular imports
 
-from config import DevelopmentConfig
+import os
+from config import DevelopmentConfig, ProductionConfig
 from db_init import initialize_database
 from flask import Flask, g, session
 from flask_session import Session
 from extensions import db
 
 
-def create_app(config_class=DevelopmentConfig):
+def create_app(config_class=None):
     """
     create the application, inject configuration dependencies
     """
+    if config_class is None:
+        # Auto-detect environment
+        if os.environ.get('FLASK_ENV') == 'production':
+            config_class = ProductionConfig
+        else:
+            config_class = DevelopmentConfig
     app = Flask(__name__)
     app.config.from_object(config_class)
 

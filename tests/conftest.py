@@ -9,6 +9,10 @@ Fixtures defined here do not need to be imported manually in test files.
 """
 
 import pytest
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from models import db
 
 @pytest.fixture(scope="function")
@@ -22,11 +26,11 @@ def app_context():
     All models are re-created using SQLAlchemy's metadata.
     </summary>
     """
-    from app import app
+    from app_factory import create_app
+    from config import TestingConfig
 
-    # Configure app for test mode with an in-memory SQLite database
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-    app.config['TESTING'] = True
+    # Create app with testing configuration
+    app = create_app(TestingConfig)
 
     # Provide application context and initialize the database schema
     with app.app_context():

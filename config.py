@@ -16,5 +16,16 @@ class DevelopmentConfig(Config):
     DEBUG = True
     PERMANENT_SESSION_LIFETIME = timedelta(minutes=30)
 
-# create testing and production config, when dev is shiftet to that stage
+class ProductionConfig(Config):
+    DEBUG = False
+    # Use /app/data for persistent storage in Docker
+    SQLALCHEMY_DATABASE_URI = "sqlite:////app/data/myfoodbudget.db"
+    DATABASE = "/app/data/myfoodbudget.db"
+    PERMANENT_SESSION_LIFETIME = timedelta(hours=24)
+
+class TestingConfig(Config):
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    DATABASE = ":memory:"
+    WTF_CSRF_ENABLED = False
 
