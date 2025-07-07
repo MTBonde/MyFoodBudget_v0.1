@@ -15,13 +15,13 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 def test_production_config_detection():
     """Test that production configuration is properly detected"""
     with patch.dict(os.environ, {'FLASK_ENV': 'production'}):
-        # Mock database initialization to avoid file system operations
+        # Reload modules to pick up environment change
+        import importlib
+        if 'app_factory' in sys.modules:
+            importlib.reload(sys.modules['app_factory'])
+        
+        # Mock the local reference after reload
         with patch('app_factory.initialize_database'):
-            # Reload modules to pick up environment change
-            import importlib
-            if 'app_factory' in sys.modules:
-                importlib.reload(sys.modules['app_factory'])
-            
             from app_factory import create_app
             app = create_app()
             
@@ -33,13 +33,13 @@ def test_production_config_detection():
 def test_development_config_detection():
     """Test that development configuration is properly detected"""
     with patch.dict(os.environ, {'FLASK_ENV': 'development'}):
-        # Mock database initialization to avoid file system operations
+        # Reload modules to pick up environment change
+        import importlib
+        if 'app_factory' in sys.modules:
+            importlib.reload(sys.modules['app_factory'])
+        
+        # Mock the local reference after reload
         with patch('app_factory.initialize_database'):
-            # Reload modules to pick up environment change
-            import importlib
-            if 'app_factory' in sys.modules:
-                importlib.reload(sys.modules['app_factory'])
-            
             from app_factory import create_app
             app = create_app()
             
