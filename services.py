@@ -152,7 +152,7 @@ def parse_quantity_from_text(quantity_text):
         return 1.0, 'unit'
     
     # Try to extract number and unit using regex
-    match = re.search(r'(\d+(?:\.\d+)?)\s*([a-zA-Z]+)', quantity_text)
+    match = re.search(r'(\d+(?:\.\d+)?)\s*([a-zA-Z\s]+)', quantity_text)
     
     if match:
         quantity = float(match.group(1))
