@@ -127,10 +127,21 @@ This document contains a prioritized list of tasks for improving the MyFoodBudge
     - [x] Add nutrition data storage in database (per 100g basis)
     - [x] Create nutrition completeness tracking
 
-15. [ ] Implement budget tracking
-    - Add expense tracking for grocery shopping
-    - Create budget reports and visualizations
-    - Implement budget goals and alerts
+15. [ ] **MVP Budget Tracking System** (builds on existing cost infrastructure)
+    - [ ] **Phase 1: Foundation** (Prerequisites)
+        - [ ] Fix user data isolation (dependency: complete task #1 first)
+        - [ ] Create budget database models (user_budgets, expenses tables)
+        - [ ] Database migration for budget tracking schema
+    - [ ] **Phase 2: Core Budget Features**
+        - [ ] Monthly budget goals (set spending targets per user)
+        - [ ] Expense logging (track when ingredients/recipes are "purchased")
+        - [ ] Budget dashboard (spending vs. budget with simple progress bars)
+        - [ ] Budget alerts (warn when approaching/exceeding limits)
+    - [ ] **Phase 3: Enhanced UI Integration**
+        - [ ] Budget status display on ingredient/recipe pages
+        - [ ] Expense history timeline
+        - [ ] Budget management interface (edit/adjust goals)
+        - [ ] Shopping list cost estimation
 
 16. [ ] Add social features
     - Implement recipe sharing
