@@ -1,0 +1,30 @@
+{% extends "errors/base_error.html" %}
+
+{% block error_color %}info{% endblock %}
+
+{% block error_title %}Page Not Found{% endblock %}
+
+{% block error_heading %}404 - Page Not Found{% endblock %}
+
+{% block error_message %}
+    The page you're looking for doesn't exist or has been moved.
+{% endblock %}
+
+{% block error_details %}
+    <div class="alert alert-info">
+        <h6>What might have happened:</h6>
+        <ul>
+            <li>The URL was typed incorrectly</li>
+            <li>The page was moved or deleted</li>
+            <li>You followed an outdated link</li>
+            <li>The page is temporarily unavailable</li>
+        </ul>
+    </div>
+{% endblock %}
+
+{% block error_actions %}
+<li><i class="fas fa-search text-primary me-2"></i>Check the URL for typos</li>
+<li><i class="fas fa-home text-primary me-2"></i><a href="/">Go to homepage</a></li>
+<li><i class="fas fa-list text-primary me-2"></i><a href="/ingredients">View your ingredients</a></li>
+<li><i class="fas fa-utensils text-primary me-2"></i><a href="/recipes">View your recipes</a></li>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "errors/base_error.html" %}
+
+{% block error_color %}danger{% endblock %}
+
+{% block error_title %}Application Error{% endblock %}
+
+{% block error_heading %}Application Error{% endblock %}
+
+{% block error_message %}
+    {% if error and error.message %}
+        {{ error.message }}
+    {% else %}
+        An application error occurred while processing your request.
+    {% endif %}
+{% endblock %}
+
+{% block error_details %}
+    <div class="alert alert-warning">
+        <h6>What happened:</h6>
+        <p>An error occurred in the application logic. This could be due to:</p>
+        <ul>
+            <li>Invalid data processing</li>
+            <li>Configuration issues</li>
+            <li>Temporary system problems</li>
+            <li>Unexpected conditions</li>
+        </ul>
+    </div>
+{% endblock %}
+
+{% block error_actions %}
+<li><i class="fas fa-refresh text-primary me-2"></i><a href="javascript:location.reload()">Try again</a></li>
+<li><i class="fas fa-arrow-left text-primary me-2"></i><a href="javascript:history.back()">Go back</a></li>
+<li><i class="fas fa-home text-primary me-2"></i><a href="/">Go to homepage</a></li>
+{% endblock %}

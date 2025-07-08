@@ -1,0 +1,30 @@
+{% extends "errors/base_error.html" %}
+
+{% block error_color %}warning{% endblock %}
+
+{% block error_title %}Bad Request{% endblock %}
+
+{% block error_heading %}400 - Bad Request{% endblock %}
+
+{% block error_message %}
+    The request was invalid or malformed. Please check your input and try again.
+{% endblock %}
+
+{% block error_details %}
+    <div class="alert alert-info">
+        <h6>What this means:</h6>
+        <p>The server couldn't understand your request. This usually happens when:</p>
+        <ul>
+            <li>Required form fields are missing</li>
+            <li>Data is in the wrong format</li>
+            <li>Invalid parameters were sent</li>
+            <li>The request syntax is incorrect</li>
+        </ul>
+    </div>
+{% endblock %}
+
+{% block error_actions %}
+<li><i class="fas fa-arrow-left text-primary me-2"></i><a href="javascript:history.back()">Go back and check your input</a></li>
+<li><i class="fas fa-refresh text-primary me-2"></i><a href="javascript:location.reload()">Try again</a></li>
+<li><i class="fas fa-home text-primary me-2"></i><a href="/">Go to homepage</a></li>
+{% endblock %}
