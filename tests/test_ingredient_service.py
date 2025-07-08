@@ -3,6 +3,10 @@ Unit tests for ingredient services using pytest, mocks, and AAA pattern.
 """
 
 import pytest
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from unittest.mock import patch, MagicMock
 from services import create_ingredient, get_all_ingredients, delete_ingredient_service
 
@@ -26,7 +30,7 @@ def test_create_ingredient_success(mock_add_ingredient):
     result = create_ingredient(test_name, test_quantity, test_unit, test_price)
 
     # Assert
-    mock_add_ingredient.assert_called_once_with(test_name, test_quantity, test_unit, test_price)
+    mock_add_ingredient.assert_called_once_with(test_name, test_quantity, test_unit, test_price, None, None)
     assert result == mock_ingredient
 
 

@@ -283,6 +283,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.mfb-env/
 
 # Spyder project settings
 .spyderproject

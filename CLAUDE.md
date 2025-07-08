@@ -2,6 +2,41 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Environment Setup
+
+**Operating System**: WSL Ubuntu on Windows  
+**Python**: 3.12+ with virtual environment in `.mfb-env/` (WSL) and `.venv/` (Windows)  
+**Framework**: Flask  
+**Package Manager**: pip  
+
+**Virtual Environment Names**:
+- `.mfb-env` (WSL/Claude Code)
+- `.venv` (Windows/PyCharm)
+
+**Development Environment Commands**:
+```bash
+# Activate Virtual Environment (WSL/Claude Code)
+source .mfb-env/bin/activate
+
+# Activate Virtual Environment (Windows/PyCharm)
+.venv\Scripts\activate
+
+# Install Dependencies
+pip install -r requirements.txt          # Production dependencies
+pip install -r requirements-dev.txt     # Development dependencies (pytest, coverage)
+pip install --upgrade Flask             # Upgrade Flask to latest
+```
+
+**Dependencies Management**:
+- Always activate virtual environment before working
+- Production dependencies: tracked in `requirements.txt`
+- Development dependencies: tracked in `requirements-dev.txt` (pytest, pytest-cov)
+- Never commit `.mfb-env/` or `.venv/` to version control
+- Add both to `.gitignore`
+- When adding new packages:
+  - Production: `pip install <package> && pip freeze > requirements.txt`
+  - Development: Add to `requirements-dev.txt` manually
+
 ## Development Commands
 
 **Run Application:**
@@ -12,14 +47,11 @@ python app.py
 
 **Run Tests:**
 ```bash
-pytest tests/
-# Run all tests
-
-pytest tests/test_userauth.py
-# Run specific test file
-
-pytest tests/test_userauth.py::test_register_user_success
-# Run specific test function
+pytest                                   # Run all tests
+pytest --cov                            # Run tests with coverage
+pytest -v                               # Run tests with verbose output
+pytest tests/test_userauth.py           # Run specific test file
+pytest tests/test_userauth.py::test_register_user_success  # Run specific test function
 ```
 
 **Database Setup:**
