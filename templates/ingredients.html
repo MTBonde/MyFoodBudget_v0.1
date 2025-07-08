@@ -16,6 +16,11 @@
                 <th>Unit</th>
                 <th>Price</th>
                 <th>Price per Unit</th>
+                <th>Calories <small>(per 100g)</small></th>
+                <th>Protein <small>(g)</small></th>
+                <th>Carbs <small>(g)</small></th>
+                <th>Fat <small>(g)</small></th>
+                <th>Fiber <small>(g)</small></th>
                 <th>Actions</th>
             </tr>
             </thead>
@@ -33,7 +38,11 @@
                         data-unit="{{ ingredient.quantity_unit }}">
                         -
                     </td>
-
+                    <td>{{ ingredient.calories or '-' }}</td>
+                    <td>{{ ingredient.protein or '-' }}</td>
+                    <td>{{ ingredient.carbohydrates or '-' }}</td>
+                    <td>{{ ingredient.fat or '-' }}</td>
+                    <td>{{ ingredient.fiber or '-' }}</td>
                     <td>
                         <form action="/delete_ingredient/{{ ingredient.id }}" method="post" class="delete-form">
                             <button type="submit" class="btn btn-danger">Delete</button>

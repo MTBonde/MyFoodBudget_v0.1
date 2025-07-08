@@ -14,6 +14,8 @@ Recipes
                 <th>Instructions</th>
                 <th>Total Price</th>
                 <th>Ingredients</th>
+                <th>Nutrition (per serving)</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -21,13 +23,29 @@ Recipes
             <tr>
                 <td>{{ recipe.name }}</td>
                 <td>{{ recipe.instructions }}</td>
-                <td>{{ recipe.total_price }}</td>
+                <td>${{ "%.2f"|format(recipe.total_price or 0) }}</td>
                 <td>
                     <ul>
                         {% for ingredient in recipe.ingredients %}
                         <li>{{ ingredient.name }}: {{ ingredient.quantity }} {{ ingredient.unit }}</li>
                         {% endfor %}
                     </ul>
+                </td>
+                <td>
+                    {% if recipe.nutrition %}
+                        <div class="nutrition-info">
+                            <strong>Calories:</strong> {{ "%.1f"|format(recipe.nutrition.per_serving.calories) }} kcal<br>
+                            <strong>Protein:</strong> {{ "%.1f"|format(recipe.nutrition.per_serving.protein) }}g<br>
+                            <strong>Carbs:</strong> {{ "%.1f"|format(recipe.nutrition.per_serving.carbohydrates) }}g<br>
+                            <strong>Fat:</strong> {{ "%.1f"|format(recipe.nutrition.per_serving.fat) }}g<br>
+                            <strong>Fiber:</strong> {{ "%.1f"|format(recipe.nutrition.per_serving.fiber) }}g<br>
+                            <small class="text-muted">
+                                ({{ recipe.nutrition.ingredients_with_nutrition }}/{{ recipe.nutrition.total_ingredients }} ingredients have nutrition data)
+                            </small>
+                        </div>
+                    {% else %}
+                        <span class="text-muted">No nutrition data available</span>
+                    {% endif %}
                 </td>
                 <td>
                     <form action="/delete_recipe/{{ recipe.id }}" method="post" class="delete-form">

@@ -58,6 +58,12 @@ pytest tests/test_userauth.py::test_register_user_success  # Run specific test f
 ```bash
 python db_init.py
 # Initialize database schema (manual approach, no migrations)
+
+# OR use the new migration system:
+python manage.py init-db          # Initialize fresh database
+python manage.py migrate          # Run pending migrations
+python manage.py migration-status # Check migration status
+python manage.py reset-db         # Reset database (WARNING: loses all data)
 ```
 
 ## Architecture Overview
@@ -113,6 +119,11 @@ Ingredients (M) ←→ (M) Recipes
 
 **Structure**: Pytest with enterprise-level discipline following AAA pattern
 
+**Test Types**:
+- **Unit Tests**: Individual components (`test_userauth.py`, `test_ingredient_service.py`)
+- **Integration Tests**: Full workflow testing (`test_integration_barcode.py`)
+- **Schema Tests**: Database schema validation (`test_database_schema.py`)
+
 **Conventions**:
 - Use `unittest.mock.patch` for mocking external dependencies
 - All test functions lowercase with underscores: `test_<what_is_tested>_<expected_result>()`
@@ -122,7 +133,8 @@ Ingredients (M) ←→ (M) Recipes
 **Test Organization**:
 - `conftest.py`: In-memory SQLite fixtures and shared setup
 - Separate files by service layer: `test_userauth.py`, `test_ingredient_service.py`
-- Missing tests for repositories and routes (see `docs/tasks.md`)
+- Integration tests cover full barcode scanning to database workflow
+- Schema tests ensure database migrations work correctly
 
 ## Configuration
 
@@ -136,6 +148,11 @@ Ingredients (M) ←→ (M) Recipes
 - Pint for unit conversion, PyTZ for timezones
 - No testing dependencies listed (pytest used but not in requirements)
 
+**Standard Test Data**:
+- **Barcode**: `5740900403376` (Krægården Smør - verified to exist on OpenFoodFacts)
+- Use this barcode for all barcode-related tests and demonstrations
+- Product: Krægården Smør (Arla butter) - Danish product with complete nutrition data
+
 ## Development Notes
 
 **Current Limitations**:
@@ -144,8 +161,16 @@ Ingredients (M) ←→ (M) Recipes
 - Limited error handling and logging
 - Hardcoded configuration values
 
+**Database Migration System**:
+- `migrations.py`: Database migration system to handle schema changes
+- `manage.py`: CLI commands for database operations
+- Automatic migration on app startup (non-breaking)
+- Version tracking to avoid schema conflicts
+- Backup/restore functionality
+
 **Key Files for Extension**:
 - `app_factory.py`: Add new Flask extensions or configuration
 - `repositories.py`: Add new data access methods
 - `services.py`: Add new business logic
 - `routes.py`: Add new endpoints (consider blueprint refactoring for large changes)
+- `migrations.py`: Add new database migrations for schema changes

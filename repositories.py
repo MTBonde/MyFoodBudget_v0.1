@@ -44,7 +44,7 @@ def find_by_username(username):
     return User.query.filter_by(username=username).first()
 
 
-def add_ingredient(name, quantity, quantity_unit, price, barcode=None, brand=None):
+def add_ingredient(name, quantity, quantity_unit, price, barcode=None, brand=None, nutrition=None):
     """
     Adds a new ingredient to the database.
     Args:
@@ -54,11 +54,32 @@ def add_ingredient(name, quantity, quantity_unit, price, barcode=None, brand=Non
         price (float): The price of the ingredient.
         barcode (str, optional): The barcode of the ingredient.
         brand (str, optional): The brand of the ingredient.
+        nutrition (dict, optional): Dictionary containing nutrition data (calories, protein, carbohydrates, fat, fiber).
     Returns:
         ingredient (Ingredient): The newly created ingredient object if successful, None otherwise.
     """
     #quantity, unit = convert_to_standard_unit(quantity, quantity_unit)
-    new_ingredient = Ingredient(name=name, quantity=quantity, quantity_unit=quantity_unit, price=price, barcode=barcode, brand=brand)
+    
+    # Extract nutrition data if provided
+    nutrition_data = {}
+    if nutrition:
+        nutrition_data = {
+            'calories': nutrition.get('calories'),
+            'protein': nutrition.get('protein'),
+            'carbohydrates': nutrition.get('carbohydrates'),
+            'fat': nutrition.get('fat'),
+            'fiber': nutrition.get('fiber')
+        }
+    
+    new_ingredient = Ingredient(
+        name=name, 
+        quantity=quantity, 
+        quantity_unit=quantity_unit, 
+        price=price, 
+        barcode=barcode, 
+        brand=brand,
+        **nutrition_data
+    )
     try:
         db.session.add(new_ingredient)
         db.session.commit()
@@ -192,6 +213,20 @@ def get_all_recipes_with_ingredients_from_db():
         })
 
     return recipes_with_ingredients
+
+
+def get_recipe_with_ingredients_from_db(recipe_id):
+    """
+    Retrieves a specific recipe with its ingredients from the database.
+    Args:
+        recipe_id (int): ID of the recipe to retrieve.
+    Returns:
+        Recipe: Recipe object with loaded ingredients, or None if not found.
+    """
+    return Recipe.query.options(
+        db.joinedload(Recipe.recipe_ingredients).joinedload(RecipeIngredient.ingredient)
+    ).filter(Recipe.id == recipe_id).first()
+
 
 def delete_recipe_from_db(recipe_id):
     recipe = Recipe.query.get(recipe_id)

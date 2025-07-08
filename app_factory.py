@@ -14,8 +14,17 @@ def initialize_database():
     Must be called within an app context.
     """
     from models import User, Ingredient, Recipe, RecipeIngredient
+    from flask import current_app
     
     try:
+        # Ensure database directory exists
+        db_path = current_app.config.get('DATABASE')
+        if db_path and db_path != ':memory:':
+            db_dir = os.path.dirname(db_path)
+            if db_dir and not os.path.exists(db_dir):
+                os.makedirs(db_dir, exist_ok=True)
+                print(f"Created database directory: {db_dir}")
+        
         # Create all tables using SQLAlchemy models
         db.create_all()
         
@@ -54,9 +63,17 @@ def create_app(config_class=None):
     # Initialize session
     Session(app)
 
-    # Initialize the database schema
+    # Initialize the database schema and run migrations
     with app.app_context():
         initialize_database()
+        
+        # Run database migrations after schema creation
+        try:
+            from migrations import migrate_database
+            migrate_database()
+        except Exception as e:
+            print(f"Migration warning: {e}")
+            # Don't fail app startup on migration errors
 
     @app.teardown_appcontext
     def teardown_db(exception):
