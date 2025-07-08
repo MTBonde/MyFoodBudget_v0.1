@@ -39,6 +39,13 @@ class Ingredient(db.Model):
     price = db.Column(db.Float, nullable=False)
     barcode = db.Column(db.String(50), nullable=True, unique=True, index=True)
     brand = db.Column(db.String(100), nullable=True)
+    
+    # Nutrition fields (all per 100g basis)
+    calories = db.Column(db.Float, nullable=True)
+    protein = db.Column(db.Float, nullable=True)
+    carbohydrates = db.Column(db.Float, nullable=True)
+    fat = db.Column(db.Float, nullable=True)
+    fiber = db.Column(db.Float, nullable=True)
 
 
 # Recipe model: stores recipes.

@@ -51,6 +51,47 @@ Add Ingredient
             <label for="price_per_unit" class="form-label">Price per Unit (per kg or per liter)</label>
             <input type="text" class="form-control" id="price_per_unit" name="price_per_unit" readonly>
         </div>
+        
+        <!-- Nutrition Information Section -->
+        <div class="mb-4">
+            <h5>Nutrition Information <small class="text-muted">(per 100g)</small></h5>
+            {% if calories or protein or carbohydrates or fat or fiber %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="calories" class="form-label">Calories (kcal)</label>
+                            <input type="number" class="form-control" id="calories" name="calories" value="{{ calories or '' }}" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="protein" class="form-label">Protein (g)</label>
+                            <input type="number" class="form-control" id="protein" name="protein" value="{{ protein or '' }}" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="carbohydrates" class="form-label">Carbohydrates (g)</label>
+                            <input type="number" class="form-control" id="carbohydrates" name="carbohydrates" value="{{ carbohydrates or '' }}" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="fat" class="form-label">Fat (g)</label>
+                            <input type="number" class="form-control" id="fat" name="fat" value="{{ fat or '' }}" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="fiber" class="form-label">Fiber (g)</label>
+                            <input type="number" class="form-control" id="fiber" name="fiber" value="{{ fiber or '' }}" readonly>
+                        </div>
+                    </div>
+                </div>
+                <div class="alert alert-info">
+                    <small><i class="bi bi-info-circle"></i> Nutrition data automatically fetched from product database.</small>
+                </div>
+            {% else %}
+                <div class="alert alert-warning">
+                    <small><i class="bi bi-exclamation-triangle"></i> No nutrition data available for this ingredient.</small>
+                </div>
+            {% endif %}
+        </div>
+        
         <button type="submit" class="btn btn-primary">Add Ingredient</button>
     </form>
 </div>

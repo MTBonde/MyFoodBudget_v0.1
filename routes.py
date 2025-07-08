@@ -11,7 +11,8 @@ from services import (
     delete_recipe_service, 
     delete_ingredient_service,
     lookup_product_by_barcode,
-    check_barcode_exists
+    check_barcode_exists,
+    get_nutrition_data_dual_source
 )
 
 def init_routes(app):
@@ -94,9 +95,16 @@ def init_routes(app):
             product_info = lookup_product_by_barcode(barcode)
             if product_info:
                 product_data = product_info
-                if product_info['source'] == 'api':
-                    flash(f'Product found: {product_info["name"]}. Please verify and adjust the information.', 'info')
+                
+                # Fetch nutrition data for display
+                nutrition_data = get_nutrition_data_dual_source(product_info['name'], barcode)
+                if nutrition_data:
+                    product_data.update(nutrition_data)
+                    flash(f'Product found: {product_info["name"]} with nutrition data. Please verify and adjust the information.', 'info')
                 else:
+                    flash(f'Product found: {product_info["name"]}, but no nutrition data available.', 'info')
+                
+                if product_info['source'] == 'local':
                     flash('This product already exists in your ingredients.', 'warning')
                     return redirect(url_for('ingredients'))
             else:

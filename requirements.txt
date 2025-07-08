@@ -1,4 +1,4 @@
-Flask~=3.0.3
+Flask~=3.1.1
 Flask-Session
 flask_sqlalchemy
 pytz~=2024.1

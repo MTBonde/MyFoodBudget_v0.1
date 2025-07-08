@@ -1,58 +1,149 @@
 # Nutrition Information Feature Implementation Plan
 
 ## Overview
-This document outlines the comprehensive plan for adding nutrition information tracking to the MyFoodBudget application. The feature will enable users to track nutritional values (calories, protein, carbohydrates, fat, fiber, sugar, sodium) for ingredients and automatically calculate nutrition information for complete recipes.
+This document outlines the plan for adding nutrition information tracking to the MyFoodBudget application. The feature will enable users to track nutritional values for ingredients using dual-source API integration (OpenFoodFacts + NutriFinder).
 
-## Current State Analysis
+**APPROACH**: Start with a simple MVP to get core dual-source nutrition functionality working, then enhance incrementally.
+
+## Current State Analysis (Updated: 2025-07-08)
+
+### ✅ **COMPLETED - Barcode Branch Implementation**
 - **Existing Architecture**: Flask app with SQLAlchemy ORM, Repository pattern, Service layer
-- **OpenFoodFacts Integration**: Already implemented for basic product lookup by barcode
+- **OpenFoodFacts Integration**: ✅ **IMPLEMENTED** - Basic product lookup by barcode with caching
 - **Database**: SQLite with manual schema management
 - **Models**: Ingredient, Recipe, RecipeIngredient, User models established
+- **Barcode Support**: ✅ **IMPLEMENTED** - Barcode and brand fields added to Ingredient model
+- **Product Lookup**: ✅ **IMPLEMENTED** - Full OpenFoodFacts API integration for product data
+- **Web Interface**: ✅ **IMPLEMENTED** - Barcode scanning UI with form pre-population
+
+### ❌ **NOT IMPLEMENTED - Nutrition Features**
+- **Nutrition Database Schema**: Missing nutrition fields in Ingredient model
+- **Nutrition Data Extraction**: OpenFoodFacts integration does not extract nutrition data
+- **Nutrition Calculations**: No nutrition calculation services implemented
+- **Nutrition UI**: No nutrition display or input in web interface
+- **Nutrition Testing**: No nutrition-related tests implemented
+
+### **Foundation Ready for Nutrition Extension**
+The barcode branch provides a solid foundation with:
+- Working OpenFoodFacts API integration (`services.py`)
+- Barcode scanning functionality (`routes.py`, `templates/add_ingredient.html`)
+- Product data normalization (`normalize_openfoodfacts_product()`)
+- Repository pattern ready for nutrition data (`repositories.py`)
+- Database schema extensible for nutrition fields (`models.py`)
+
+## 🎯 **MVP TARGET: Simple Dual-Source Nutrition**
+
+### **MVP Scope** (Implement First)
+1. ✅ Basic nutrition fields in Ingredient model
+2. ✅ NutriFinder API integration for simple ingredients
+3. ✅ Enhanced OpenFoodFacts to extract nutrition data
+4. ✅ Simple nutrition display in ingredient forms
+5. ✅ Basic dual-source selection logic
+
+### **MVP Exclusions** (Future Phases)
+- ❌ Recipe nutrition calculations
+- ❌ Advanced data quality features
+- ❌ Complex caching strategies
+- ❌ Nutrition editing interfaces
+- ❌ Advanced error handling
+
+---
 
 ## Implementation Plan
 
-### 1. Database Schema Changes
+### 1. **MVP Phase 1: Database Schema Changes**
 
-#### 1.1 Ingredient Model Extension
-Add nutrition fields to the `Ingredient` model (standardized per 100g):
+#### 1.1 Ingredient Model Extension (MVP - Core Fields Only)
+Add **essential** nutrition fields to the `Ingredient` model:
 ```python
-# New fields to add to Ingredient model
+# MVP: Add only core nutrition fields to Ingredient model
 calories = db.Column(db.Float, nullable=True)           # kcal per 100g
 protein = db.Column(db.Float, nullable=True)            # g per 100g
 carbohydrates = db.Column(db.Float, nullable=True)      # g per 100g
 fat = db.Column(db.Float, nullable=True)                # g per 100g
 fiber = db.Column(db.Float, nullable=True)              # g per 100g
-sugar = db.Column(db.Float, nullable=True)              # g per 100g
-sodium = db.Column(db.Float, nullable=True)             # mg per 100g
+# MVP: Skip sugar/sodium for now - can add later
 ```
 
-#### 1.2 Database Migration
-- Update `db_init.py` to include new columns in ingredients table
-- Create migration script for existing data
-- Handle NULL values appropriately for existing ingredients
+#### 1.2 Database Migration (MVP - Simple)
+- Update `db_init.py` to include new nutrition columns
+- All fields nullable (existing ingredients will have NULL nutrition)
+- No complex migration script needed for MVP
 
-#### 1.3 Recipe Nutrition Enhancement
-Consider adding computed nutrition fields to Recipe model:
+#### 1.3 Recipe Nutrition Enhancement (SKIP FOR MVP)
+**Future Phase**: Recipe nutrition calculations come after basic ingredient nutrition works
+
+### 2. **MVP Phase 2: Dual-Source API Integration**
+
+#### 2.1 MVP: Simple NutriFinder Integration (IMPLEMENT FIRST)
+**STATUS**: ❌ **NOT IMPLEMENTED** - New integration required
+**USE CASE**: Simple ingredients without barcodes (e.g., "tomato", "egg", "apple")
+
+**MVP Implementation**:
 ```python
-# Optional: Add to Recipe model for caching
-total_calories = db.Column(db.Float, nullable=True)
-total_protein = db.Column(db.Float, nullable=True)
-total_carbohydrates = db.Column(db.Float, nullable=True)
-total_fat = db.Column(db.Float, nullable=True)
-total_fiber = db.Column(db.Float, nullable=True)
-total_sugar = db.Column(db.Float, nullable=True)
-total_sodium = db.Column(db.Float, nullable=True)
+def fetch_nutrition_from_nutrifinder(ingredient_name):
+    """MVP: Simple NutriFinder API call"""
+    try:
+        url = f"https://api.mtbonde.dev/api/nutrition?foodItemName={ingredient_name}"
+        response = requests.get(url, timeout=10)
+        if response.status_code == 200:
+            data = response.json()
+            return {
+                'calories': data.get('kcal'),
+                'protein': data.get('protein'),
+                'carbohydrates': data.get('carb'),
+                'fat': data.get('fat'),
+                'fiber': data.get('fiber')
+            }
+    except:
+        return None
 ```
 
-### 2. OpenFoodFacts API Integration Enhancement
+#### 2.2 MVP: Enhanced OpenFoodFacts (IMPLEMENT SECOND)
+**STATUS**: ❌ **NOT IMPLEMENTED** - Extend existing `normalize_openfoodfacts_product()`
+**USE CASE**: Branded products with barcodes (e.g., "Lurpak Butter")
 
-#### 2.1 Nutrition Data Extraction
-Extend `normalize_openfoodfacts_product()` function to extract:
-- Energy values (convert from kJ to kcal: multiply by 0.23900573614)
-- Protein, carbohydrates, fat, fiber, sugar per 100g
-- Sodium content (handle salt to sodium conversion)
+**MVP Enhancement**:
+```python
+def extract_nutrition_from_off_product(product_data):
+    """MVP: Extract basic nutrition from OpenFoodFacts"""
+    nutriments = product_data.get('nutriments', {})
+    return {
+        'calories': nutriments.get('energy-kcal_100g') or nutriments.get('energy_100g', 0) * 0.239,
+        'protein': nutriments.get('proteins_100g'),
+        'carbohydrates': nutriments.get('carbohydrates_100g'), 
+        'fat': nutriments.get('fat_100g'),
+        'fiber': nutriments.get('fiber_100g')
+    }
+```
 
-#### 2.2 API Response Handling
+#### 2.3 MVP: Simple Dual-Source Logic
+**PRIORITY LOGIC** (Simple):
+1. **Has Barcode**: Try OpenFoodFacts first
+2. **No Barcode OR OpenFoodFacts failed**: Try NutriFinder
+3. **Both Failed**: Store ingredient without nutrition (user can add manually later)
+
+```python
+def get_nutrition_data_simple(ingredient_name, barcode=None):
+    """MVP: Simple dual-source nutrition lookup"""
+    nutrition = None
+    
+    # Try OpenFoodFacts if barcode exists
+    if barcode:
+        product_data = fetch_product_from_openfoodfacts(barcode)
+        if product_data:
+            nutrition = extract_nutrition_from_off_product(product_data)
+    
+    # Fallback to NutriFinder
+    if not nutrition:
+        nutrition = fetch_nutrition_from_nutrifinder(ingredient_name)
+    
+    return nutrition  # Can be None - that's OK for MVP
+```
+
+#### 2.4 API Response Handling Implementation
+
+**OpenFoodFacts Nutrition Extraction**:
 ```python
 def extract_nutrition_from_off_product(product_data):
     """
@@ -74,6 +165,67 @@ def extract_nutrition_from_off_product(product_data):
         'sugar': nutriments.get('sugars_100g'),
         'sodium': nutriments.get('sodium_100g')  # Already in mg
     }
+    
+    return nutrition
+```
+
+**NutriFinder API Integration**:
+```python
+def fetch_nutrition_from_nutrifinder(food_item_name):
+    """
+    Fetch nutrition information from NutriFinder API for simple ingredients.
+    Returns nutrition data per 100g basis.
+    """
+    import requests
+    import re
+    
+    # Validate input (1-32 characters, English letters only)
+    if not re.match(r'^[a-åA-Å]{1,32}$', food_item_name):
+        return None
+    
+    try:
+        url = f"https://api.mtbonde.dev/api/nutrition?foodItemName={food_item_name}"
+        response = requests.get(url, timeout=10)
+        
+        if response.status_code == 200:
+            data = response.json()
+            
+            # Map NutriFinder response to our format
+            nutrition = {
+                'calories': data.get('kcal'),
+                'protein': data.get('protein'),
+                'carbohydrates': data.get('carb'),
+                'fat': data.get('fat'),
+                'fiber': data.get('fiber'),
+                'sugar': None,  # Not provided by NutriFinder
+                'sodium': None  # Not provided by NutriFinder
+            }
+            
+            return nutrition
+        elif response.status_code == 404:
+            return None  # Food item not found
+        else:
+            return None  # Other errors
+            
+    except requests.RequestException:
+        return None  # Network/timeout errors
+
+def get_nutrition_data_dual_source(ingredient_name, barcode=None):
+    """
+    Get nutrition data using dual-source strategy.
+    Priority: OpenFoodFacts (if barcode) -> NutriFinder -> Manual entry
+    """
+    nutrition = None
+    
+    # Try OpenFoodFacts first if barcode exists
+    if barcode:
+        product_data = fetch_product_from_openfoodfacts(barcode)
+        if product_data:
+            nutrition = extract_nutrition_from_off_product(product_data)
+    
+    # Fallback to NutriFinder for simple ingredients
+    if not nutrition:
+        nutrition = fetch_nutrition_from_nutrifinder(ingredient_name)
     
     return nutrition
 ```
@@ -160,6 +312,8 @@ def get_all_recipes_with_nutrition():
 Create comprehensive tests for:
 - Nutrition calculation algorithms
 - OpenFoodFacts nutrition data extraction
+- **NutriFinder API integration and response handling**
+- **Dual-source nutrition data strategy**
 - Unit conversion for nutrition values
 - Database operations with nutrition data
 
@@ -175,35 +329,41 @@ Create comprehensive tests for:
 
 ### 7. Implementation Phases
 
-#### Phase 1: Database and Models (Foundation)
-1. Update Ingredient model with nutrition fields
-2. Modify database schema (db_init.py)
-3. Create migration script for existing data
-4. Update repositories to handle nutrition data
+#### ✅ **Phase 0: Foundation (COMPLETED)**
+1. ✅ Basic OpenFoodFacts API integration (`services.py`)
+2. ✅ Barcode scanning functionality (`routes.py`, `templates/add_ingredient.html`)
+3. ✅ Product data normalization (`normalize_openfoodfacts_product()`)
+4. ✅ Repository pattern ready for extension (`repositories.py`)
+5. ✅ Database schema extensible (`models.py`)
 
-#### Phase 2: OpenFoodFacts Integration
-1. Extend normalize_openfoodfacts_product function
-2. Add nutrition data extraction logic
-3. Implement error handling and fallbacks
-4. Test API integration thoroughly
+#### 🎯 **MVP Phase 1: Database Schema (SIMPLE)**
+1. ❌ Add 5 core nutrition fields to Ingredient model
+2. ❌ Update `db_init.py` with new columns
+3. ❌ Update `add_ingredient()` in repositories to accept nutrition data
 
-#### Phase 3: Nutrition Services
-1. Create nutrition calculation services
-2. Implement recipe nutrition calculation
-3. Add unit conversion support
-4. Create nutrition update services
+#### 🎯 **MVP Phase 2: API Integration (DUAL-SOURCE)**
+1. ❌ Add `fetch_nutrition_from_nutrifinder()` function
+2. ❌ Add `extract_nutrition_from_off_product()` function  
+3. ❌ Add `get_nutrition_data_simple()` dual-source function
+4. ❌ Update ingredient creation to use nutrition APIs
 
-#### Phase 4: Web Interface
-1. Update ingredient forms with nutrition fields
-2. Add nutrition display to recipes
-3. Enhance ingredient management with nutrition
-4. Add nutrition-focused UI components
+#### 🎯 **MVP Phase 3: Basic UI (DISPLAY ONLY)**
+1. ❌ Show nutrition data in ingredient forms
+2. ❌ Display nutrition in ingredient listings
+3. ❌ Add simple nutrition display template
 
-#### Phase 5: Testing and Validation
-1. Write comprehensive unit tests
-2. Create integration tests
-3. Validate nutrition calculations
-4. Test user workflows end-to-end
+#### 🎯 **MVP Phase 4: Testing (BASIC)**
+1. ❌ Test NutriFinder API integration
+2. ❌ Test OpenFoodFacts nutrition extraction
+3. ❌ Test dual-source logic
+
+---
+
+#### 🚀 **FUTURE PHASES** (Post-MVP)
+- **Phase 5**: Recipe nutrition calculations
+- **Phase 6**: Advanced data quality features  
+- **Phase 7**: Nutrition editing interfaces
+- **Phase 8**: Performance optimizations
 
 ### 8. Data Validation and Quality
 
