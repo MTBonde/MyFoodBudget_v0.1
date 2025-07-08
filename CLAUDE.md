@@ -149,9 +149,9 @@ Ingredients (M) ←→ (M) Recipes
 - No testing dependencies listed (pytest used but not in requirements)
 
 **Standard Test Data**:
-- **Barcode**: `5740900403376` (Krægården Smør - verified to exist on OpenFoodFacts)
+- **Barcode**: `5740900403376` (Kærgården Smør - verified to exist on OpenFoodFacts)
 - Use this barcode for all barcode-related tests and demonstrations
-- Product: Krægården Smør (Arla butter) - Danish product with complete nutrition data
+- Product: Kærgården Smør (Arla butter) - Danish product with complete nutrition data
 
 ## Development Notes
 
