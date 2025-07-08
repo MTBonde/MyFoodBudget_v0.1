@@ -41,8 +41,8 @@ class TestBarcodeValidators(unittest.TestCase):
         
     def test_normalize_barcode(self):
         """Test barcode normalization."""
-        self.assertEqual(normalize_barcode("570-000-000003"), "5700000000003")
-        self.assertEqual(normalize_barcode("570 000 000003"), "5700000000003")
+        self.assertEqual(normalize_barcode("570-000-000003"), "570000000003")
+        self.assertEqual(normalize_barcode("570 000 000003"), "570000000003")
 
 
 class TestBarcodeScanner(unittest.TestCase):
@@ -65,12 +65,12 @@ class TestBarcodeScanner(unittest.TestCase):
         self.scanner = BarcodeScanner([self.mock_openfoodfacts_reader, self.mock_nutrifinder_reader])
     
     def test_lookup_product_by_barcode_success(self):
-        """Test successful product lookup by barcode."""
+        """Test successful product lookup by barcode using Krægården smør."""
         # Arrange
-        test_barcode = "1234567890128"  # Valid test barcode
+        test_barcode = "5740900403376"  # Krægården smør
         expected_product = {
-            'name': 'Test Product',
-            'brand': 'Test Brand',
+            'name': 'Krægården Smør',
+            'brand': 'Arla',
             'barcode': test_barcode
         }
         
@@ -103,28 +103,29 @@ class TestBarcodeScanner(unittest.TestCase):
         self.mock_nutrifinder_reader.lookup_by_name.assert_called_once_with(test_name)
     
     def test_get_nutrition_data_success(self):
-        """Test successful nutrition data retrieval."""
+        """Test successful nutrition data retrieval using Krægården smør."""
         # Arrange
-        test_name = "apple"
+        test_barcode = "5740900403376"  # Krægården smør
         product_info = {
-            'name': 'Apple',
-            'source': 'nutrifinder',
-            'raw_data': {'kcal': 52, 'protein': 0.3}
+            'name': 'Krægården Smør',
+            'source': 'openfoodfacts',
+            'raw_data': {'kcal': 717, 'protein': 0.7}
         }
         expected_nutrition = {
-            'calories': 52,
-            'protein': 0.3,
-            'carbohydrates': 14,
-            'fat': 0.2,
-            'fiber': 2.4
+            'calories': 717,
+            'protein': 0.7,
+            'carbohydrates': 0.1,
+            'fat': 81.0,
+            'fiber': 0.0
         }
         
-        self.mock_nutrifinder_reader.lookup_by_name.return_value = product_info
-        self.mock_nutrifinder_reader.supports_product.return_value = True
-        self.mock_nutrifinder_reader.get_nutrition.return_value = expected_nutrition
+        # Mock the lookup_product method to return our product info
+        self.mock_openfoodfacts_reader.lookup_by_barcode.return_value = product_info
+        self.mock_openfoodfacts_reader.supports_product.return_value = True
+        self.mock_openfoodfacts_reader.get_nutrition.return_value = expected_nutrition
         
         # Act
-        result = self.scanner.get_nutrition_data(name=test_name)
+        result = self.scanner.get_nutrition_data(barcode=test_barcode)
         
         # Assert
         self.assertEqual(result, expected_nutrition)

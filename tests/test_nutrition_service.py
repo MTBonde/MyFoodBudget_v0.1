@@ -150,113 +150,77 @@ class TestNutritionService:
 
     def test_get_nutrition_data_dual_source_with_barcode_success(self):
         """
-        Test dual-source nutrition lookup with successful OpenFoodFacts result.
+        Test dual-source nutrition lookup with successful OpenFoodFacts result using Krægården smør.
         
-        Arrange: Mock successful OpenFoodFacts fetch
+        Arrange: Mock BarcodeScanner to return expected nutrition data
         Act: Call get_nutrition_data_dual_source with barcode
-        Assert: Returns OpenFoodFacts nutrition data
+        Assert: Returns expected nutrition data
         """
-        mock_product_data = {
-            'nutriments': {
-                'energy-kcal_100g': 534.0,
-                'proteins_100g': 25.0,
-                'carbohydrates_100g': 30.0,
-                'fat_100g': 29.0,
-                'fiber_100g': 9.0
-            }
+        expected = {
+            'calories': 707.0,
+            'protein': 0.6,
+            'carbohydrates': 0.7,
+            'fat': 78.0,
+            'fiber': None
         }
         
-        with patch('services.fetch_product_from_openfoodfacts') as mock_fetch:
-            mock_fetch.return_value = mock_product_data
+        with patch('services.BarcodeScanner') as mock_scanner_class:
+            mock_scanner = mock_scanner_class.return_value
+            mock_scanner.get_nutrition_data.return_value = expected
             
-            result = get_nutrition_data_dual_source('test_product', '1234567890')
-            
-            expected = {
-                'calories': 534.0,
-                'protein': 25.0,
-                'carbohydrates': 30.0,
-                'fat': 29.0,
-                'fiber': 9.0
-            }
+            result = get_nutrition_data_dual_source('test_product', '5740900403376')
             
             assert result == expected
-            mock_fetch.assert_called_once_with('1234567890')
+            mock_scanner.get_nutrition_data.assert_called_once_with(barcode='5740900403376', name='test_product')
 
     def test_get_nutrition_data_dual_source_fallback_to_nutrifinder(self):
         """
         Test dual-source nutrition lookup falling back to NutriFinder.
         
-        Arrange: Mock failed OpenFoodFacts, successful NutriFinder
+        Arrange: Mock BarcodeScanner to return NutriFinder nutrition data
         Act: Call get_nutrition_data_dual_source
         Assert: Returns NutriFinder nutrition data
         """
-        mock_nutrifinder_data = {
-            'kcal': 89.0,
+        expected = {
+            'calories': 89.0,
             'protein': 4.3,
-            'carb': 20.1,
+            'carbohydrates': 20.1,
             'fat': 0.3,
             'fiber': 2.6
         }
         
-        with patch('services.fetch_product_from_openfoodfacts') as mock_off:
-            with patch('services.requests.get') as mock_get:
-                # OpenFoodFacts returns None
-                mock_off.return_value = None
-                
-                # NutriFinder returns data
-                mock_response = MagicMock()
-                mock_response.status_code = 200
-                mock_response.json.return_value = mock_nutrifinder_data
-                mock_get.return_value = mock_response
-                
-                result = get_nutrition_data_dual_source('tomato', '1234567890')
-                
-                expected = {
-                    'calories': 89.0,
-                    'protein': 4.3,
-                    'carbohydrates': 20.1,
-                    'fat': 0.3,
-                    'fiber': 2.6
-                }
-                
-                assert result == expected
+        with patch('services.BarcodeScanner') as mock_scanner_class:
+            mock_scanner = mock_scanner_class.return_value
+            mock_scanner.get_nutrition_data.return_value = expected
+            
+            result = get_nutrition_data_dual_source('tomato', '5740900403376')
+            
+            assert result == expected
 
     def test_get_nutrition_data_dual_source_no_barcode_uses_nutrifinder(self):
         """
         Test dual-source nutrition lookup without barcode uses NutriFinder directly.
         
-        Arrange: Mock successful NutriFinder response
+        Arrange: Mock BarcodeScanner to return NutriFinder nutrition data
         Act: Call get_nutrition_data_dual_source without barcode
-        Assert: Returns NutriFinder nutrition data, OpenFoodFacts not called
+        Assert: Returns NutriFinder nutrition data
         """
-        mock_nutrifinder_data = {
-            'kcal': 89.0,
+        expected = {
+            'calories': 89.0,
             'protein': 4.3,
-            'carb': 20.1,
+            'carbohydrates': 20.1,
             'fat': 0.3,
             'fiber': 2.6
         }
         
-        with patch('services.fetch_product_from_openfoodfacts') as mock_off:
-            with patch('services.requests.get') as mock_get:
-                mock_response = MagicMock()
-                mock_response.status_code = 200
-                mock_response.json.return_value = mock_nutrifinder_data
-                mock_get.return_value = mock_response
-                
-                result = get_nutrition_data_dual_source('tomato')
-                
-                expected = {
-                    'calories': 89.0,
-                    'protein': 4.3,
-                    'carbohydrates': 20.1,
-                    'fat': 0.3,
-                    'fiber': 2.6
-                }
-                
-                assert result == expected
-                # OpenFoodFacts should not be called without barcode
-                mock_off.assert_not_called()
+        with patch('services.BarcodeScanner') as mock_scanner_class:
+            mock_scanner = mock_scanner_class.return_value
+            mock_scanner.get_nutrition_data.return_value = expected
+            
+            result = get_nutrition_data_dual_source('tomato')
+            
+            assert result == expected
+            mock_scanner.get_nutrition_data.assert_called_once_with(barcode=None, name='tomato')
 
     def test_get_nutrition_data_dual_source_both_sources_fail(self):
         """
