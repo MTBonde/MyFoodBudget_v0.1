@@ -214,6 +214,20 @@ def get_all_recipes_with_ingredients_from_db():
 
     return recipes_with_ingredients
 
+
+def get_recipe_with_ingredients_from_db(recipe_id):
+    """
+    Retrieves a specific recipe with its ingredients from the database.
+    Args:
+        recipe_id (int): ID of the recipe to retrieve.
+    Returns:
+        Recipe: Recipe object with loaded ingredients, or None if not found.
+    """
+    return Recipe.query.options(
+        db.joinedload(Recipe.recipe_ingredients).joinedload(RecipeIngredient.ingredient)
+    ).filter(Recipe.id == recipe_id).first()
+
+
 def delete_recipe_from_db(recipe_id):
     recipe = Recipe.query.get(recipe_id)
     if recipe:

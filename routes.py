@@ -12,7 +12,8 @@ from services import (
     delete_ingredient_service,
     lookup_product_by_barcode,
     check_barcode_exists,
-    get_nutrition_data_dual_source
+    get_nutrition_data_dual_source,
+    calculate_recipe_nutrition
 )
 
 def init_routes(app):
@@ -246,6 +247,11 @@ def init_routes(app):
     @login_required
     def recipes():
         recipes_list = get_all_recipes_with_ingredients()
+        
+        # Add nutrition data to each recipe
+        for recipe in recipes_list:
+            recipe['nutrition'] = calculate_recipe_nutrition(recipe['id'])
+        
         return render_template('recipes.html', recipes=recipes_list)
 
     @app.route('/ingredients')
