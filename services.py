@@ -2,6 +2,16 @@ from werkzeug.security import check_password_hash
 import requests
 import logging
 from barcode import BarcodeScanner
+from exceptions import (
+    AuthenticationError,
+    ValidationError,
+    DatabaseError,
+    ServiceError,
+    DuplicateResourceError,
+    ResourceNotFoundError,
+    ExternalServiceError
+)
+from logging_config import get_logger
 from repositories import (
     create_user,
     find_by_username,
@@ -18,69 +28,357 @@ from repositories import (
     barcode_exists
 )
 
+# Get logger for this module
+logger = get_logger('services')
+
 def authenticate_user(username, password):
-    user = find_by_username(username)
-    if user and check_password_hash(user.hash, password):
-        return user
-    return None
+    """
+    Authenticate a user with username and password.
+    
+    Args:
+        username (str): Username to authenticate
+        password (str): Password to verify
+        
+    Returns:
+        User: User object if authentication successful
+        
+    Raises:
+        ValidationError: If username or password is empty
+        AuthenticationError: If credentials are invalid
+        DatabaseError: If database operation fails
+    """
+    if not username or not password:
+        raise ValidationError("Username and password are required")
+    
+    try:
+        user = find_by_username(username)
+        if user and check_password_hash(user.hash, password):
+            logger.info(f"User {username} authenticated successfully")
+            return user
+        else:
+            logger.warning(f"Authentication failed for user {username}")
+            raise AuthenticationError("Invalid username or password", username=username)
+            
+    except AuthenticationError:
+        # Re-raise authentication errors
+        raise
+    except Exception as e:
+        logger.error(f"Database error during authentication for user {username}: {e}")
+        raise DatabaseError("Authentication failed due to database error", operation="authenticate_user")
 
 def register_user(username, email, password):
-    if find_by_username(username) is not None:
-        return False
-    user = create_user(username, email, password)
-    return user is not None
+    """
+    Register a new user account.
+    
+    Args:
+        username (str): Username for the new account
+        email (str): Email address for the new account
+        password (str): Password for the new account
+        
+    Returns:
+        User: Created user object
+        
+    Raises:
+        ValidationError: If required fields are missing or invalid
+        DuplicateResourceError: If username already exists
+        DatabaseError: If database operation fails
+    """
+    # Input validation
+    if not username or not email or not password:
+        raise ValidationError("Username, email, and password are required")
+        
+    if len(username) < 3:
+        raise ValidationError("Username must be at least 3 characters long", field="username")
+        
+    if len(password) < 6:
+        raise ValidationError("Password must be at least 6 characters long", field="password")
+    
+    try:
+        # Check if username already exists
+        if find_by_username(username) is not None:
+            raise DuplicateResourceError(
+                f"Username '{username}' already exists",
+                resource_type="user",
+                identifier=username
+            )
+        
+        # Create the user
+        user = create_user(username, email, password)
+        if user is None:
+            raise DatabaseError("Failed to create user account", operation="create_user")
+            
+        logger.info(f"User {username} registered successfully")
+        return user
+        
+    except (ValidationError, DuplicateResourceError):
+        # Re-raise validation and duplicate errors
+        raise
+    except Exception as e:
+        logger.error(f"Database error during user registration for {username}: {e}")
+        raise DatabaseError("Registration failed due to database error", operation="register_user")
 
 def create_ingredient(name, quantity, quantity_unit, price, barcode=None, brand=None):
-    # Fetch nutrition data using new barcode scanner
-    scanner = BarcodeScanner()
-    nutrition = scanner.get_nutrition_data(barcode=barcode, name=name)
+    """
+    Create a new ingredient with nutrition data.
     
-    # Create ingredient with nutrition data
-    return add_ingredient(name, quantity, quantity_unit, price, barcode, brand, nutrition)
+    Args:
+        name (str): Name of the ingredient
+        quantity (float): Quantity of the ingredient
+        quantity_unit (str): Unit of the quantity
+        price (float): Price of the ingredient
+        barcode (str, optional): Barcode of the ingredient
+        brand (str, optional): Brand of the ingredient
+        
+    Returns:
+        Ingredient: Created ingredient object
+        
+    Raises:
+        ValidationError: If required fields are missing or invalid
+        DuplicateResourceError: If barcode already exists
+        DatabaseError: If database operation fails
+        ExternalServiceError: If nutrition data lookup fails
+    """
+    # Input validation
+    if not name or not quantity_unit:
+        raise ValidationError("Name and quantity unit are required")
+        
+    if quantity <= 0:
+        raise ValidationError("Quantity must be greater than 0", field="quantity", value=str(quantity))
+        
+    if price < 0:
+        raise ValidationError("Price cannot be negative", field="price", value=str(price))
+    
+    # Check if barcode already exists
+    if barcode and check_barcode_exists(barcode):
+        raise DuplicateResourceError(
+            f"Ingredient with barcode '{barcode}' already exists",
+            resource_type="ingredient",
+            identifier=barcode
+        )
+    
+    try:
+        # Fetch nutrition data using new barcode scanner
+        scanner = BarcodeScanner()
+        nutrition = scanner.get_nutrition_data(barcode=barcode, name=name)
+        
+        # Create ingredient with nutrition data
+        ingredient = add_ingredient(name, quantity, quantity_unit, price, barcode, brand, nutrition)
+        
+        if ingredient is None:
+            raise DatabaseError("Failed to create ingredient", operation="add_ingredient")
+            
+        logger.info(f"Ingredient '{name}' created successfully")
+        return ingredient
+        
+    except (ValidationError, DuplicateResourceError):
+        # Re-raise validation and duplicate errors
+        raise
+    except Exception as e:
+        logger.error(f"Error creating ingredient '{name}': {e}")
+        raise ServiceError(f"Failed to create ingredient '{name}'", service="ingredient_service", operation="create_ingredient")
 
 def create_recipe(name, instructions, ingredients):
-    # Compute total recipe cost using the cost formula:
-    # For each ingredient: cost = (quantity_used / quantity_purchased) * price
-    total_price = sum(
-        (ing['quantity_used'] / ing['quantity_purchased']) * ing['price']
-        for ing in ingredients if ing['quantity_purchased'] > 0
-    )
-    recipe = add_recipe(name, instructions, total_price)
-    if recipe:
+    """
+    Create a new recipe with ingredients.
+    
+    Args:
+        name (str): Name of the recipe
+        instructions (str): Recipe instructions
+        ingredients (list): List of ingredient dictionaries
+        
+    Returns:
+        Recipe: Created recipe object
+        
+    Raises:
+        ValidationError: If required fields are missing or invalid
+        DatabaseError: If database operation fails
+        ServiceError: If recipe creation fails
+    """
+    # Input validation
+    if not name or not instructions:
+        raise ValidationError("Recipe name and instructions are required")
+        
+    if not ingredients or len(ingredients) == 0:
+        raise ValidationError("Recipe must contain at least one ingredient")
+    
+    # Validate ingredients
+    for i, ing in enumerate(ingredients):
+        if not all(key in ing for key in ['id', 'quantity_used', 'quantity_purchased', 'price']):
+            raise ValidationError(f"Ingredient {i+1} is missing required fields")
+            
+        if ing['quantity_used'] <= 0:
+            raise ValidationError(f"Ingredient {i+1} quantity used must be greater than 0")
+            
+        if ing['quantity_purchased'] <= 0:
+            raise ValidationError(f"Ingredient {i+1} quantity purchased must be greater than 0")
+    
+    try:
+        # Compute total recipe cost using the cost formula:
+        # For each ingredient: cost = (quantity_used / quantity_purchased) * price
+        total_price = sum(
+            (ing['quantity_used'] / ing['quantity_purchased']) * ing['price']
+            for ing in ingredients if ing['quantity_purchased'] > 0
+        )
+        
+        # Create the recipe
+        recipe = add_recipe(name, instructions, total_price)
+        if recipe is None:
+            raise DatabaseError("Failed to create recipe", operation="add_recipe")
+        
+        # Add ingredients to the recipe
         for ing in ingredients:
-            # Save the ingredient usage in the recipe; note that we pass the used amount.
             if not add_recipe_ingredient(recipe.id, ing['id'], ing['quantity_used'], ing['quantity_unit']):
-                return None
+                # Clean up by deleting the recipe if ingredient addition fails
+                try:
+                    delete_recipe_from_db(recipe.id)
+                except:
+                    pass
+                raise DatabaseError("Failed to add ingredient to recipe", operation="add_recipe_ingredient")
+        
+        logger.info(f"Recipe '{name}' created successfully with {len(ingredients)} ingredients")
         return recipe
-    else:
-        return None
+        
+    except (ValidationError, DatabaseError):
+        # Re-raise validation and database errors
+        raise
+    except Exception as e:
+        logger.error(f"Error creating recipe '{name}': {e}")
+        raise ServiceError(f"Failed to create recipe '{name}'", service="recipe_service", operation="create_recipe")
 
 def get_all_ingredients():
+    """
+    Retrieve all ingredients from the database.
+    
+    Returns:
+        list: List of ingredient objects
+        
+    Raises:
+        DatabaseError: If database operation fails
+    """
     try:
-        return get_all_ingredients_from_db()
+        ingredients = get_all_ingredients_from_db()
+        logger.debug(f"Retrieved {len(ingredients)} ingredients from database")
+        return ingredients
     except Exception as e:
-        logging.error(f"Error retrieving ingredients: {e}")
-        return []
+        logger.error(f"Error retrieving ingredients: {e}")
+        raise DatabaseError("Failed to retrieve ingredients", operation="get_all_ingredients")
 
 def get_all_recipes():
-    return get_all_recipes_from_db()
+    """
+    Retrieve all recipes from the database.
+    
+    Returns:
+        list: List of recipe objects
+        
+    Raises:
+        DatabaseError: If database operation fails
+    """
+    try:
+        recipes = get_all_recipes_from_db()
+        logger.debug(f"Retrieved {len(recipes)} recipes from database")
+        return recipes
+    except Exception as e:
+        logger.error(f"Error retrieving recipes: {e}")
+        raise DatabaseError("Failed to retrieve recipes", operation="get_all_recipes")
 
 def get_all_recipes_with_ingredients():
-    return get_all_recipes_with_ingredients_from_db()
+    """
+    Retrieve all recipes with their ingredients from the database.
+    
+    Returns:
+        list: List of recipe objects with ingredients
+        
+    Raises:
+        DatabaseError: If database operation fails
+    """
+    try:
+        recipes = get_all_recipes_with_ingredients_from_db()
+        logger.debug(f"Retrieved {len(recipes)} recipes with ingredients from database")
+        return recipes
+    except Exception as e:
+        logger.error(f"Error retrieving recipes with ingredients: {e}")
+        raise DatabaseError("Failed to retrieve recipes with ingredients", operation="get_all_recipes_with_ingredients")
 
 def delete_recipe_service(recipe_id):
+    """
+    Delete a recipe from the database.
+    
+    Args:
+        recipe_id (int): ID of the recipe to delete
+        
+    Returns:
+        bool: True if deletion was successful
+        
+    Raises:
+        ValidationError: If recipe_id is invalid
+        ResourceNotFoundError: If recipe doesn't exist
+        DatabaseError: If database operation fails
+    """
+    if not recipe_id or recipe_id <= 0:
+        raise ValidationError("Recipe ID must be a positive integer", field="recipe_id")
+    
     try:
-        return delete_recipe_from_db(recipe_id)
+        # Check if recipe exists first
+        recipe = get_recipe_with_ingredients_from_db(recipe_id)
+        if not recipe:
+            raise ResourceNotFoundError(
+                f"Recipe with ID {recipe_id} not found",
+                resource_type="recipe",
+                resource_id=str(recipe_id)
+            )
+        
+        # Delete the recipe
+        success = delete_recipe_from_db(recipe_id)
+        if not success:
+            raise DatabaseError("Failed to delete recipe", operation="delete_recipe")
+            
+        logger.info(f"Recipe with ID {recipe_id} deleted successfully")
+        return True
+        
+    except (ValidationError, ResourceNotFoundError, DatabaseError):
+        # Re-raise specific errors
+        raise
     except Exception as e:
-        print("Error deleting recipe:", e)
-        return False
+        logger.error(f"Error deleting recipe {recipe_id}: {e}")
+        raise DatabaseError("Failed to delete recipe", operation="delete_recipe_service")
 
 def delete_ingredient_service(ingredient_id):
+    """
+    Delete an ingredient from the database.
+    
+    Args:
+        ingredient_id (int): ID of the ingredient to delete
+        
+    Returns:
+        bool: True if deletion was successful
+        
+    Raises:
+        ValidationError: If ingredient_id is invalid
+        ResourceNotFoundError: If ingredient doesn't exist
+        DatabaseError: If database operation fails
+    """
+    if not ingredient_id or ingredient_id <= 0:
+        raise ValidationError("Ingredient ID must be a positive integer", field="ingredient_id")
+    
     try:
-        return delete_ingredient_from_db(ingredient_id)
+        # Delete the ingredient
+        success = delete_ingredient_from_db(ingredient_id)
+        if not success:
+            raise ResourceNotFoundError(
+                f"Ingredient with ID {ingredient_id} not found",
+                resource_type="ingredient",
+                resource_id=str(ingredient_id)
+            )
+            
+        logger.info(f"Ingredient with ID {ingredient_id} deleted successfully")
+        return True
+        
+    except (ValidationError, ResourceNotFoundError):
+        # Re-raise specific errors
+        raise
     except Exception as e:
-        print("Error deleting ingredient:", e)
-        return False
+        logger.error(f"Error deleting ingredient {ingredient_id}: {e}")
+        raise DatabaseError("Failed to delete ingredient", operation="delete_ingredient_service")
 
 
 def fetch_product_from_openfoodfacts(barcode):
@@ -186,15 +484,26 @@ def lookup_product_by_barcode(barcode):
     """
     Looks up a product by barcode, first checking local database, then using barcode scanner.
     Uses caching to avoid duplicate API calls.
+    
     Args:
         barcode (str): The barcode to look up.
+        
     Returns:
         dict: Product information with 'source' field indicating 'local' or 'api'
+        
+    Raises:
+        ValidationError: If barcode is invalid
+        ExternalServiceError: If API lookup fails
+        DatabaseError: If database operation fails
     """
+    if not barcode or len(barcode.strip()) == 0:
+        raise ValidationError("Barcode cannot be empty", field="barcode")
+    
     # First check if we have this barcode in our local database
     try:
         local_ingredient = find_ingredient_by_barcode(barcode)
         if local_ingredient:
+            logger.debug(f"Found local ingredient for barcode {barcode}")
             return {
                 'source': 'local',
                 'name': local_ingredient.name,
@@ -205,37 +514,58 @@ def lookup_product_by_barcode(barcode):
                 'barcode': local_ingredient.barcode
             }
     except Exception as e:
-        logging.error(f"Error checking local ingredient by barcode: {e}")
+        logger.error(f"Error checking local ingredient by barcode: {e}")
+        raise DatabaseError("Failed to check local ingredient database", operation="find_ingredient_by_barcode")
     
     # Check cache first to avoid duplicate API calls
     if barcode in _barcode_cache:
+        logger.debug(f"Found cached result for barcode {barcode}")
         return _barcode_cache[barcode]
     
-    # If not found locally or in cache, try barcode scanner
-    scanner = BarcodeScanner()
-    api_product = scanner.lookup_product(barcode=barcode)
-    if api_product:
-        api_product['source'] = 'api'
-    
-    # Cache the result (even if None) to avoid repeated API calls
-    _barcode_cache[barcode] = api_product
-    
-    return api_product
+    try:
+        # If not found locally or in cache, try barcode scanner
+        scanner = BarcodeScanner()
+        api_product = scanner.lookup_product(barcode=barcode)
+        if api_product:
+            api_product['source'] = 'api'
+            logger.info(f"Successfully looked up product for barcode {barcode} via API")
+        else:
+            logger.info(f"No product found for barcode {barcode}")
+        
+        # Cache the result (even if None) to avoid repeated API calls
+        _barcode_cache[barcode] = api_product
+        
+        return api_product
+        
+    except Exception as e:
+        logger.error(f"Error looking up product by barcode {barcode}: {e}")
+        raise ExternalServiceError("Failed to lookup product by barcode", "barcode_scanner")
 
 
 def check_barcode_exists(barcode):
     """
     Checks if a barcode already exists in the local database.
+    
     Args:
         barcode (str): The barcode to check.
+        
     Returns:
         bool: True if barcode exists, False otherwise.
+        
+    Raises:
+        ValidationError: If barcode is invalid
+        DatabaseError: If database operation fails
     """
+    if not barcode or len(barcode.strip()) == 0:
+        raise ValidationError("Barcode cannot be empty", field="barcode")
+    
     try:
-        return barcode_exists(barcode)
+        exists = barcode_exists(barcode)
+        logger.debug(f"Barcode {barcode} existence check: {exists}")
+        return exists
     except Exception as e:
-        logging.error(f"Error checking barcode existence: {e}")
-        return False
+        logger.error(f"Error checking barcode existence: {e}")
+        raise DatabaseError("Failed to check barcode existence", operation="check_barcode_exists")
 
 
 def fetch_nutrition_from_nutrifinder(food_item_name):
@@ -354,18 +684,29 @@ def calculate_recipe_nutrition(recipe_id):
     """
     Calculate total nutrition for a recipe based on ingredients and quantities.
     Returns nutrition per recipe and per serving.
+    
     Args:
         recipe_id (int): ID of the recipe to calculate nutrition for.
+        
     Returns:
-        dict: Nutrition data with total and per-serving values, or None if calculation fails.
+        dict: Nutrition data with total and per-serving values
+        
+    Raises:
+        ValidationError: If recipe_id is invalid
+        ResourceNotFoundError: If recipe doesn't exist
+        ServiceError: If calculation fails
     """
-    import logging
+    if not recipe_id or recipe_id <= 0:
+        raise ValidationError("Recipe ID must be a positive integer", field="recipe_id")
     
     try:
         recipe = get_recipe_with_ingredients_from_db(recipe_id)
         if not recipe:
-            logging.warning(f"Recipe with ID {recipe_id} not found")
-            return None
+            raise ResourceNotFoundError(
+                f"Recipe with ID {recipe_id} not found",
+                resource_type="recipe",
+                resource_id=str(recipe_id)
+            )
         
         # Initialize totals
         total_nutrition = {
@@ -416,7 +757,7 @@ def calculate_recipe_nutrition(recipe_id):
             key: round(value / servings, 2) for key, value in total_nutrition.items()
         }
         
-        return {
+        result = {
             'total': total_nutrition,
             'per_serving': per_serving_nutrition,
             'servings': servings,
@@ -425,9 +766,15 @@ def calculate_recipe_nutrition(recipe_id):
             'nutrition_completeness': (ingredients_with_nutrition / total_ingredients) * 100 if total_ingredients > 0 else 0
         }
         
+        logger.debug(f"Successfully calculated nutrition for recipe {recipe_id}")
+        return result
+        
+    except (ValidationError, ResourceNotFoundError):
+        # Re-raise specific errors
+        raise
     except Exception as e:
-        logging.error(f"Error calculating recipe nutrition: {e}")
-        return None
+        logger.error(f"Error calculating recipe nutrition: {e}")
+        raise ServiceError("Failed to calculate recipe nutrition", service="nutrition_service", operation="calculate_recipe_nutrition")
 
 
 def calculate_nutrition_factor(quantity_used, quantity_unit, ingredient_quantity, ingredient_unit):
@@ -482,16 +829,29 @@ def calculate_nutrition_factor(quantity_used, quantity_unit, ingredient_quantity
 def get_recipe_with_nutrition(recipe_id):
     """
     Get recipe with calculated nutrition information.
+    
     Args:
         recipe_id (int): ID of the recipe.
+        
     Returns:
         dict: Recipe data with nutrition information.
+        
+    Raises:
+        ValidationError: If recipe_id is invalid
+        ResourceNotFoundError: If recipe doesn't exist
+        ServiceError: If nutrition calculation fails
     """
+    if not recipe_id or recipe_id <= 0:
+        raise ValidationError("Recipe ID must be a positive integer", field="recipe_id")
     
     try:
         recipe = get_recipe_with_ingredients_from_db(recipe_id)
         if not recipe:
-            return None
+            raise ResourceNotFoundError(
+                f"Recipe with ID {recipe_id} not found",
+                resource_type="recipe",
+                resource_id=str(recipe_id)
+            )
         
         # Calculate nutrition
         nutrition = calculate_recipe_nutrition(recipe_id)
@@ -520,8 +880,12 @@ def get_recipe_with_nutrition(recipe_id):
             'nutrition': nutrition
         }
         
+        logger.debug(f"Successfully retrieved recipe {recipe_id} with nutrition")
         return recipe_data
         
+    except (ValidationError, ResourceNotFoundError):
+        # Re-raise specific errors
+        raise
     except Exception as e:
-        logging.error(f"Error getting recipe with nutrition: {e}")
-        return None
+        logger.error(f"Error getting recipe with nutrition: {e}")
+        raise ServiceError("Failed to get recipe with nutrition", service="recipe_service", operation="get_recipe_with_nutrition")

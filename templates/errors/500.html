@@ -1,0 +1,26 @@
+{% extends "errors/base_error.html" %}
+
+{% block error_color %}danger{% endblock %}
+
+{% block error_title %}Internal Server Error{% endblock %}
+
+{% block error_heading %}500 - Internal Server Error{% endblock %}
+
+{% block error_message %}
+    An unexpected error occurred on our servers. We've been notified and are working to fix it.
+{% endblock %}
+
+{% block error_details %}
+    <div class="alert alert-warning">
+        <h6>What happened:</h6>
+        <p>A server error occurred while processing your request. This is not your fault - it's an issue on our end.</p>
+        <p>The error has been automatically logged and our team will investigate it.</p>
+    </div>
+{% endblock %}
+
+{% block error_actions %}
+<li><i class="fas fa-refresh text-primary me-2"></i><a href="javascript:location.reload()">Try again</a></li>
+<li><i class="fas fa-clock text-primary me-2"></i>Wait a few minutes and try again</li>
+<li><i class="fas fa-home text-primary me-2"></i><a href="/">Go to homepage</a></li>
+<li><i class="fas fa-arrow-left text-primary me-2"></i><a href="javascript:history.back()">Go back</a></li>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "errors/base_error.html" %}
+
+{% block error_color %}danger{% endblock %}
+
+{% block error_title %}Configuration Error{% endblock %}
+
+{% block error_heading %}Configuration Error{% endblock %}
+
+{% block error_message %}
+    A configuration error occurred. Please contact support.
+{% endblock %}
+
+{% block error_actions %}
+<li><i class="fas fa-refresh text-primary me-2"></i><a href="javascript:location.reload()">Try again</a></li>
+<li><i class="fas fa-home text-primary me-2"></i><a href="/">Go to homepage</a></li>
+{% endblock %}

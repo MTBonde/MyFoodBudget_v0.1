@@ -10,6 +10,7 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from services import register_user, authenticate_user
+from exceptions import ValidationError, DuplicateResourceError, AuthenticationError, DatabaseError
 
 
 def test_register_user_success(app_context):
@@ -27,7 +28,9 @@ def test_register_user_success(app_context):
     result = register_user(username, email, password)
 
     # Assert
-    assert result is True
+    assert result is not None
+    assert result.username == username
+    assert result.email == email
 
 
 def test_register_user_duplicate_username(app_context):
@@ -40,15 +43,13 @@ def test_register_user_duplicate_username(app_context):
     username = "duplicateuser"
     email1 = "user1@example.com"
     email2 = "user2@example.com"
-    password1 = "pass1"
-    password2 = "pass2"
+    password1 = "password1"
+    password2 = "password2"
     register_user(username, email1, password1)
 
-    # Act
-    result = register_user(username, email2, password2)
-
-    # Assert
-    assert result is False
+    # Act & Assert
+    with pytest.raises(DuplicateResourceError):
+        register_user(username, email2, password2)
 
 
 def test_register_user_duplicate_email(app_context):
@@ -61,15 +62,13 @@ def test_register_user_duplicate_email(app_context):
     username1 = "user1"
     username2 = "user2"
     shared_email = "shared@example.com"
-    password1 = "pass1"
-    password2 = "pass2"
+    password1 = "password1"
+    password2 = "password2"
     register_user(username1, shared_email, password1)
 
-    # Act
-    result = register_user(username2, shared_email, password2)
-
-    # Assert
-    assert result is False
+    # Act & Assert
+    with pytest.raises(DatabaseError):
+        register_user(username2, shared_email, password2)
 
 
 def test_authenticate_user_success(app_context):
@@ -105,11 +104,9 @@ def test_authenticate_user_wrong_password(app_context):
     wrong_password = "wrongpass"
     register_user(username, email, correct_password)
 
-    # Act
-    result = authenticate_user(username, wrong_password)
-
-    # Assert
-    assert result is None
+    # Act & Assert
+    with pytest.raises(AuthenticationError):
+        authenticate_user(username, wrong_password)
 
 
 def test_authenticate_user_nonexistent(app_context):
@@ -122,11 +119,9 @@ def test_authenticate_user_nonexistent(app_context):
     username = "ghost"
     password = "any"
 
-    # Act
-    result = authenticate_user(username, password)
-
-    # Assert
-    assert result is None
+    # Act & Assert
+    with pytest.raises(AuthenticationError):
+        authenticate_user(username, password)
 
 
 def test_authenticate_user_empty_username(app_context):
@@ -139,11 +134,9 @@ def test_authenticate_user_empty_username(app_context):
     username_empty = ""
     password = "something"
 
-    # Act
-    result = authenticate_user(username_empty, password)
-
-    # Assert
-    assert result is None
+    # Act & Assert
+    with pytest.raises(ValidationError):
+        authenticate_user(username_empty, password)
 
 
 def test_authenticate_user_empty_password(app_context):
@@ -156,8 +149,6 @@ def test_authenticate_user_empty_password(app_context):
     username = "someone"
     password_empty = ""
 
-    # Act
-    result = authenticate_user(username, password_empty)
-
-    # Assert
-    assert result is None
+    # Act & Assert
+    with pytest.raises(ValidationError):
+        authenticate_user(username, password_empty)

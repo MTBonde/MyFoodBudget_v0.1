@@ -1,5 +1,7 @@
 from flask import render_template, request, redirect, session, url_for, jsonify, flash
-from helpers import apology, login_required
+from helpers import apology, login_required, validate_required_fields, validate_numeric_field
+from exceptions import ValidationError, AuthenticationError, DatabaseError, ServiceError
+from logging_config import get_logger
 from services import (
     authenticate_user,
     register_user,
@@ -16,6 +18,9 @@ from services import (
     calculate_recipe_nutrition
 )
 
+# Get logger for routes
+logger = get_logger('routes')
+
 def init_routes(app):
     @app.route('/')
     def home():
@@ -27,34 +32,65 @@ def init_routes(app):
     @app.route("/register", methods=["GET", "POST"])
     def register():
         if request.method == "POST":
-            username = request.form.get("username")
-            email = request.form.get("email")
-            password = request.form.get("password")
-            confirmation = request.form.get("confirmation")
-            if not username or not email or not password or not confirmation:
-                return apology("All fields are required", 400)
-            if password != confirmation:
-                return apology("Passwords must match", 400)
-            if register_user(username, email, password):
+            try:
+                # Validate required fields
+                validate_required_fields(request.form, ["username", "email", "password", "confirmation"])
+                
+                username = request.form.get("username")
+                email = request.form.get("email")
+                password = request.form.get("password")
+                confirmation = request.form.get("confirmation")
+                
+                # Validate password confirmation
+                if password != confirmation:
+                    raise ValidationError("Passwords must match", field="confirmation")
+                
+                # Register the user (this will handle validation and raise appropriate exceptions)
+                register_user(username, email, password)
+                
+                flash('Registration successful! You can now log in.', 'success')
+                logger.info(f"User {username} registered successfully")
                 return redirect("/login")
-            else:
-                return apology("Username or email already exists", 400)
+                
+            except ValidationError as e:
+                flash(e.message, 'error')
+                logger.warning(f"Registration validation error: {e.message}")
+                return render_template("register.html", 
+                                     username=request.form.get("username", ""),
+                                     email=request.form.get("email", ""))
+            except Exception as e:
+                logger.error(f"Unexpected error during registration: {e}")
+                flash("An unexpected error occurred. Please try again.", 'error')
+                return render_template("register.html")
         else:
             return render_template("register.html")
 
     @app.route("/login", methods=["GET", "POST"])
     def login():
         if request.method == "POST":
-            username = request.form.get("username")
-            password = request.form.get("password")
-            if not username or not password:
-                return apology("Must provide username and password", 400)
-            user = authenticate_user(username, password)
-            if user:
+            try:
+                # Validate required fields
+                validate_required_fields(request.form, ["username", "password"])
+                
+                username = request.form.get("username")
+                password = request.form.get("password")
+                
+                # Authenticate user (this will handle validation and raise appropriate exceptions)
+                user = authenticate_user(username, password)
+                
                 session["user_id"] = user.id
+                flash('Login successful!', 'success')
+                logger.info(f"User {username} logged in successfully")
                 return redirect("/")
-            else:
-                return apology("Invalid username or password", 403)
+                
+            except (ValidationError, AuthenticationError) as e:
+                flash(e.message, 'error')
+                logger.warning(f"Login error: {e.message}")
+                return render_template("login.html", username=request.form.get("username", ""))
+            except Exception as e:
+                logger.error(f"Unexpected error during login: {e}")
+                flash("An unexpected error occurred. Please try again.", 'error')
+                return render_template("login.html")
         else:
             return render_template("login.html")
 
@@ -67,25 +103,41 @@ def init_routes(app):
     @login_required
     def add_ingredient_route():
         if request.method == 'POST':
-            name = request.form.get('name')
-            brand = request.form.get('brand')
-            barcode = request.form.get('barcode')
-            quantity = float(request.form.get('quantity'))
-            quantity_unit = request.form.get('quantity_unit')
-            price = float(request.form.get('price'))
-            
-            # Check if barcode already exists (if provided)
-            if barcode and check_barcode_exists(barcode):
-                flash('An ingredient with this barcode already exists.', 'warning')
-                return render_template('add_ingredient.html', 
-                                     name=name, brand=brand, barcode=barcode,
-                                     quantity=quantity, quantity_unit=quantity_unit, price=price)
-            
-            if create_ingredient(name, quantity, quantity_unit, price, barcode, brand):
+            try:
+                # Validate required fields
+                validate_required_fields(request.form, ['name', 'quantity', 'quantity_unit', 'price'])
+                
+                name = request.form.get('name')
+                brand = request.form.get('brand')
+                barcode = request.form.get('barcode')
+                
+                # Validate numeric fields
+                quantity = validate_numeric_field(request.form.get('quantity'), 'quantity', min_value=0.001)
+                price = validate_numeric_field(request.form.get('price'), 'price', min_value=0)
+                
+                quantity_unit = request.form.get('quantity_unit')
+                
+                # Create ingredient (this will handle validation and raise appropriate exceptions)
+                create_ingredient(name, quantity, quantity_unit, price, barcode, brand)
+                
                 flash('Ingredient added successfully!', 'success')
+                logger.info(f"Ingredient '{name}' added successfully")
                 return redirect(url_for('ingredients'))
-            else:
-                return apology('Error adding ingredient', 400)
+                
+            except ValidationError as e:
+                flash(e.message, 'error')
+                logger.warning(f"Add ingredient validation error: {e.message}")
+                return render_template('add_ingredient.html', 
+                                     name=request.form.get('name', ''),
+                                     brand=request.form.get('brand', ''),
+                                     barcode=request.form.get('barcode', ''),
+                                     quantity=request.form.get('quantity', ''),
+                                     quantity_unit=request.form.get('quantity_unit', ''),
+                                     price=request.form.get('price', ''))
+            except Exception as e:
+                logger.error(f"Unexpected error adding ingredient: {e}")
+                flash("An unexpected error occurred. Please try again.", 'error')
+                return render_template('add_ingredient.html')
         
         # Handle GET with barcode parameter (from scanner redirect)
         barcode = request.args.get('barcode')
@@ -126,7 +178,7 @@ def init_routes(app):
             barcode = data.get('barcode')
             
             if not barcode:
-                return jsonify({'error': 'Barcode is required'}), 400
+                raise ValidationError('Barcode is required', field='barcode')
             
             # Check if barcode already exists in our database
             if check_barcode_exists(barcode):
@@ -140,97 +192,137 @@ def init_routes(app):
             product_info = lookup_product_by_barcode(barcode)
             
             if product_info:
+                logger.info(f"Product found for barcode {barcode}")
                 return jsonify({
                     'status': 'found',
                     'product': product_info,
                     'redirect': url_for('add_ingredient_route', barcode=barcode)
                 })
             else:
+                logger.info(f"Product not found for barcode {barcode}")
                 return jsonify({
                     'status': 'not_found',
                     'message': 'Product not found. You can add it manually.',
                     'redirect': url_for('add_ingredient_route', barcode=barcode)
                 })
                 
+        except ValidationError as e:
+            logger.warning(f"Scan product validation error: {e.message}")
+            return jsonify({'error': e.message}), 400
         except Exception as e:
-            return jsonify({'error': f'Server error: {str(e)}'}), 500
+            logger.error(f"Unexpected error during product scan: {e}")
+            return jsonify({'error': 'Server error occurred'}), 500
 
     @app.route('/add_meal', methods=['GET', 'POST'])
     @login_required
     def add_meal_route():
         if request.method == 'POST':
-            # Recipe basic info
-            name = request.form.get('name')
-            instructions = request.form.get('instructions')
+            try:
+                # Recipe basic info
+                name = request.form.get('name')
+                instructions = request.form.get('instructions')
+                
+                # Validate required fields
+                if not name or not instructions:
+                    raise ValidationError("Recipe name and instructions are required")
 
-            # Retrieve fields for existing ingredients
-            existing_ingredient_ids = request.form.getlist('existing_ingredients[]')
-            existing_quantity_purchased = request.form.getlist('existing_quantity_purchased[]')
-            existing_quantity_used = request.form.getlist('existing_quantity_used[]')
-            existing_ingredient_units = request.form.getlist('existing_ingredient_units[]')
+                # Retrieve fields for existing ingredients
+                existing_ingredient_ids = request.form.getlist('existing_ingredients[]')
+                existing_quantity_purchased = request.form.getlist('existing_quantity_purchased[]')
+                existing_quantity_used = request.form.getlist('existing_quantity_used[]')
+                existing_ingredient_units = request.form.getlist('existing_ingredient_units[]')
 
-            # Retrieve fields for new ingredients
-            new_ingredient_names = request.form.getlist('new_ingredient_names[]')
-            new_quantity_purchased = request.form.getlist('new_quantity_purchased[]')
-            new_quantity_used = request.form.getlist('new_quantity_used[]')
-            new_unit = request.form.getlist('new_unit[]')
-            new_ingredient_prices = request.form.getlist('new_ingredient_prices[]')
+                # Retrieve fields for new ingredients
+                new_ingredient_names = request.form.getlist('new_ingredient_names[]')
+                new_quantity_purchased = request.form.getlist('new_quantity_purchased[]')
+                new_quantity_used = request.form.getlist('new_quantity_used[]')
+                new_unit = request.form.getlist('new_unit[]')
+                new_ingredient_prices = request.form.getlist('new_ingredient_prices[]')
 
-            ingredients = []
+                ingredients = []
 
-            # Process existing ingredients
-            for ingr_id, qty_purchased_str, qty_used_str, unit in zip(
-                    existing_ingredient_ids,
-                    existing_quantity_purchased,
-                    existing_quantity_used,
-                    existing_ingredient_units):
-                if ingr_id and qty_purchased_str and qty_used_str:
-                    try:
-                        ingredient_id = int(ingr_id)
-                        quantity_purchased = float(qty_purchased_str)
-                        quantity_used = float(qty_used_str)
-                    except ValueError as e:
-                        print("Conversion error for existing ingredient:", e)
-                        continue
-                    # Get the price from the database
-                    price = next((ing.price for ing in get_all_ingredients() if ing.id == ingredient_id), 0)
-                    ingredients.append({
-                        'id': ingredient_id,
-                        'quantity_purchased': quantity_purchased,
-                        'quantity_used': quantity_used,
-                        'quantity_unit': unit,
-                        'price': price
-                    })
-
-            # Process new ingredients
-            for name_val, qty_purchased_str, qty_used_str, unit, price_str in zip(
-                    new_ingredient_names,
-                    new_quantity_purchased,
-                    new_quantity_used,
-                    new_unit,
-                    new_ingredient_prices):
-                if name_val and qty_purchased_str and qty_used_str:
-                    try:
-                        quantity_purchased = float(qty_purchased_str)
-                        quantity_used = float(qty_used_str)
-                        price = float(price_str)
-                    except ValueError as e:
-                        print("Conversion error for new ingredient:", e)
-                        continue
-                    new_ing = create_ingredient(name_val, quantity_purchased, unit, price)
-                    if new_ing:
+                # Process existing ingredients
+                for ingr_id, qty_purchased_str, qty_used_str, unit in zip(
+                        existing_ingredient_ids,
+                        existing_quantity_purchased,
+                        existing_quantity_used,
+                        existing_ingredient_units):
+                    if ingr_id and qty_purchased_str and qty_used_str:
+                        try:
+                            ingredient_id = int(ingr_id)
+                            quantity_purchased = float(qty_purchased_str)
+                            quantity_used = float(qty_used_str)
+                        except ValueError as e:
+                            logger.warning(f"Conversion error for existing ingredient: {e}")
+                            continue
+                        # Get the price from the database
+                        price = next((ing.price for ing in get_all_ingredients() if ing.id == ingredient_id), 0)
                         ingredients.append({
-                            'id': new_ing.id,
+                            'id': ingredient_id,
                             'quantity_purchased': quantity_purchased,
                             'quantity_used': quantity_used,
                             'quantity_unit': unit,
                             'price': price
                         })
 
-            if create_recipe(name, instructions, ingredients):
+                # Process new ingredients
+                for name_val, qty_purchased_str, qty_used_str, unit, price_str in zip(
+                        new_ingredient_names,
+                        new_quantity_purchased,
+                        new_quantity_used,
+                        new_unit,
+                        new_ingredient_prices):
+                    if name_val and qty_purchased_str and qty_used_str:
+                        try:
+                            quantity_purchased = float(qty_purchased_str)
+                            quantity_used = float(qty_used_str)
+                            price = float(price_str)
+                        except ValueError as e:
+                            logger.warning(f"Conversion error for new ingredient: {e}")
+                            continue
+                        new_ing = create_ingredient(name_val, quantity_purchased, unit, price)
+                        if new_ing:
+                            ingredients.append({
+                                'id': new_ing.id,
+                                'quantity_purchased': quantity_purchased,
+                                'quantity_used': quantity_used,
+                                'quantity_unit': unit,
+                                'price': price
+                            })
+
+                # Create recipe (this will handle validation and raise appropriate exceptions)
+                create_recipe(name, instructions, ingredients)
+                
+                flash('Recipe added successfully!', 'success')
+                logger.info(f"Recipe '{name}' added successfully")
                 return redirect(url_for('recipes'))
-            else:
-                return apology('Error adding recipe', 400)
+                
+            except ValidationError as e:
+                flash(e.message, 'error')
+                logger.warning(f"Add recipe validation error: {e.message}")
+                # Return to form with current data
+                ingredients_list = get_all_ingredients()
+                ingredients_data = [{
+                    'id': ing.id,
+                    'name': ing.name,
+                    'price': ing.price,
+                    'quantity': ing.quantity,
+                    'quantity_unit': ing.quantity_unit
+                } for ing in ingredients_list]
+                return render_template('add_meal.html', ingredients=ingredients_data)
+            except Exception as e:
+                logger.error(f"Unexpected error adding recipe: {e}")
+                flash("An unexpected error occurred. Please try again.", 'error')
+                # Return to form
+                ingredients_list = get_all_ingredients()
+                ingredients_data = [{
+                    'id': ing.id,
+                    'name': ing.name,
+                    'price': ing.price,
+                    'quantity': ing.quantity,
+                    'quantity_unit': ing.quantity_unit
+                } for ing in ingredients_list]
+                return render_template('add_meal.html', ingredients=ingredients_data)
 
         # GET request: provide ingredients data for the dropdowns
         ingredients_list = get_all_ingredients()
@@ -263,16 +355,39 @@ def init_routes(app):
     @app.route('/delete_recipe/<int:recipe_id>', methods=['POST'])
     @login_required
     def delete_recipe(recipe_id):
-        # Call a service function that deletes the recipe.
-        if delete_recipe_service(recipe_id):
+        try:
+            # Delete the recipe (this will handle validation and raise appropriate exceptions)
+            delete_recipe_service(recipe_id)
+            
+            flash('Recipe deleted successfully!', 'success')
+            logger.info(f"Recipe {recipe_id} deleted successfully")
             return redirect(url_for('recipes'))
-        else:
-            return apology("Error deleting recipe", 400)
+            
+        except ValidationError as e:
+            flash(e.message, 'error')
+            logger.warning(f"Delete recipe validation error: {e.message}")
+            return redirect(url_for('recipes'))
+        except Exception as e:
+            logger.error(f"Unexpected error deleting recipe {recipe_id}: {e}")
+            flash("An unexpected error occurred while deleting the recipe.", 'error')
+            return redirect(url_for('recipes'))
 
     @app.route('/delete_ingredient/<int:ingredient_id>', methods=['POST'])
     @login_required
     def delete_ingredient(ingredient_id):
-        if delete_ingredient_service(ingredient_id):
+        try:
+            # Delete the ingredient (this will handle validation and raise appropriate exceptions)
+            delete_ingredient_service(ingredient_id)
+            
+            flash('Ingredient deleted successfully!', 'success')
+            logger.info(f"Ingredient {ingredient_id} deleted successfully")
             return redirect(url_for('ingredients'))
-        else:
-            return apology("Error deleting ingredient", 400)
+            
+        except ValidationError as e:
+            flash(e.message, 'error')
+            logger.warning(f"Delete ingredient validation error: {e.message}")
+            return redirect(url_for('ingredients'))
+        except Exception as e:
+            logger.error(f"Unexpected error deleting ingredient {ingredient_id}: {e}")
+            flash("An unexpected error occurred while deleting the ingredient.", 'error')
+            return redirect(url_for('ingredients'))

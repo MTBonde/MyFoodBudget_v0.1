@@ -13,6 +13,7 @@ from config import TestingConfig
 from extensions import db
 from models import Ingredient
 from services import lookup_product_by_barcode, create_ingredient, get_nutrition_data_dual_source
+from exceptions import DuplicateResourceError
 
 
 class TestBarcodeIntegration(unittest.TestCase):
@@ -104,17 +105,15 @@ class TestBarcodeIntegration(unittest.TestCase):
         self.assertIsNotNone(ingredient1)
         
         # Act 2: Try to create duplicate
-        ingredient2 = create_ingredient(
-            name="Second Butter",
-            quantity=500.0,
-            quantity_unit="g", 
-            price=30.0,
-            barcode=test_barcode,  # Same barcode
-            brand="Brand2"
-        )
-        
-        # Assert 2: Duplicate should fail due to unique constraint
-        self.assertIsNone(ingredient2, "Duplicate barcode should be rejected")
+        with self.assertRaises(DuplicateResourceError):
+            create_ingredient(
+                name="Second Butter",
+                quantity=500.0,
+                quantity_unit="g", 
+                price=30.0,
+                barcode=test_barcode,  # Same barcode
+                brand="Brand2"
+            )
         
         # Assert 3: Only one ingredient in database
         ingredients = Ingredient.query.filter_by(barcode=test_barcode).all()

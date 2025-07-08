@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from unittest.mock import patch, MagicMock
 from services import create_ingredient, get_all_ingredients, delete_ingredient_service
+from exceptions import ServiceError, ResourceNotFoundError, DatabaseError
 
 
 @patch("services.BarcodeScanner")
@@ -56,7 +57,7 @@ def test_create_ingredient_failure(mock_add_ingredient, mock_scanner_class):
     """
     ARRANGE: Simulate failure.
     ACT: Call create_ingredient.
-    ASSERT: Should return None.
+    ASSERT: Should raise ServiceError.
     """
     # Arrange
     test_name = "Salt"
@@ -71,11 +72,9 @@ def test_create_ingredient_failure(mock_add_ingredient, mock_scanner_class):
     
     mock_add_ingredient.return_value = None
 
-    # Act
-    result = create_ingredient(test_name, test_quantity, test_unit, test_price)
-
-    # Assert
-    assert result is None
+    # Act & Assert
+    with pytest.raises(ServiceError):
+        create_ingredient(test_name, test_quantity, test_unit, test_price)
 
 
 
@@ -124,18 +123,15 @@ def test_delete_ingredient_failure(mock_delete_ingredient):
     """
     ARRANGE: Invalid ID.
     ACT: Call delete_ingredient_service.
-    ASSERT: Should return False.
+    ASSERT: Should raise ResourceNotFoundError.
     """
     # Arrange
     invalid_id = 999
     mock_delete_ingredient.return_value = False
 
-    # Act
-    result = delete_ingredient_service(invalid_id)
-
-    # Assert
-    mock_delete_ingredient.assert_called_once_with(invalid_id)
-    assert result is False
+    # Act & Assert
+    with pytest.raises(ResourceNotFoundError):
+        delete_ingredient_service(invalid_id)
 
 
 
@@ -144,16 +140,13 @@ def test_delete_ingredient_exception(mock_delete_ingredient):
     """
     ARRANGE: Simulate exception.
     ACT: Call delete_ingredient_service.
-    ASSERT: Should return False.
+    ASSERT: Should raise DatabaseError.
     """
     # Arrange
     ingredient_id = 1
     mock_delete_ingredient.side_effect = Exception("DB error")
 
-    # Act
-    result = delete_ingredient_service(ingredient_id)
-
-    # Assert
-    mock_delete_ingredient.assert_called_once_with(ingredient_id)
-    assert result is False
+    # Act & Assert
+    with pytest.raises(DatabaseError):
+        delete_ingredient_service(ingredient_id)
 
