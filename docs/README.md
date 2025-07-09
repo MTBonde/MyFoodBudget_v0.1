@@ -14,21 +14,24 @@ MyFoodBudget is a web application designed to help users track ingredients, mana
 
 ## Features
 
-- **User Authentication**: Registration, login, and logout with secure password hashing (Flask-Login).
+- **User Authentication**: Registration, login, and logout with secure password hashing (Flask-Session).
 - **Ingredient Management**: Add, view, and delete ingredients with quantity and price; automatic price-per-unit calculation.
 - **Recipe Management**: Create, view, and delete recipes by combining existing or new ingredients; automatic cost breakdown.
 - **Cost Calculation**: Computes total recipe cost using ingredient usage ratios.
-- **Future Enhancements**: 
-  - Receipt scanning (OCR).
-  - nutritional information lookup. 
-  - Deal finder integrations.
+- **Barcode Scanning**: Integration with OpenFoodFacts and NutriFinder DTU for automatic ingredient lookup
+- **Nutrition Tracking**: Complete nutritional information (calories, protein, carbs, fat, fiber) per serving
+- **Error Handling**: Comprehensive error handling with custom error pages and logging
+- **Database Migrations**: Custom migration system for schema updates
 
 ## Technology Stack
 
 - **Backend**: Python, Flask, SQLAlchemy, SQLite
 - **Frontend**: HTML, CSS, JavaScript, Bootstrap
-- **Authentication**: Flask-Login
-- **Forms & Validation**: Flask-WTF
+- **Authentication**: Flask-Session
+- **Database**: SQLite with SQLAlchemy ORM
+- **Unit Conversion**: Pint library
+- **External APIs**: OpenFoodFacts, NutriFinder DTU (nutrition data)
+- **Testing**: pytest with comprehensive test coverage
 
 ## Architecture
 
@@ -55,26 +58,38 @@ MyFoodBudget is a web application designed to help users track ingredients, mana
 
 ```
 MyFoodBudget/
-├── app.py            # Flask app initialization
-├── config.py         # Configuration settings
-├── models.py         # ORM data models
-├── forms.py          # Flask-WTF forms
-├── routes.py         # Controllers (Flask routes)
-├── repositories.py   # Data access layer
-├── services.py       # Business logic layer
-├── helpers/          # Utility functions
-│   └── utils.py
-├── templates/        # Jinja2 templates
-├── static/           # CSS and JS files
-└── requirements.txt  # Python dependencies
+├── app.py                 # Flask app initialization
+├── app_factory.py         # Application factory pattern
+├── config.py              # Configuration settings
+├── models.py              # ORM data models
+├── routes.py              # Controllers (Flask routes)
+├── repositories.py        # Data access layer
+├── services.py            # Business logic layer
+├── helpers.py             # Utility functions and decorators
+├── extensions.py          # Flask extension initialization
+├── error_handlers.py      # Custom error handling
+├── exceptions.py          # Custom exception classes
+├── logging_config.py      # Logging configuration
+├── migrations.py          # Database migration system
+├── manage.py              # Database management CLI
+├── barcode/               # Barcode scanning module
+│   ├── scanner.py
+│   └── readers/
+├── docs/                  # Documentation
+├── tests/                 # Test suite
+├── templates/             # Jinja2 templates
+├── static/                # CSS and JS files
+├── logs/                  # Application logs
+└── requirements.txt       # Python dependencies
 ```
 
 ## Database Schema
 
 - **users**: `id`, `username`, `hash`, `email`, `created_at`
-- **ingredients**: `id`, `name`, `quantity`, `quantity_unit`, `price`
-- **recipes**: `id`, `name`, `instructions`, `total_price`
+- **ingredients**: `id`, `name`, `quantity`, `quantity_unit`, `price`, `user_id`, `barcode`, `calories_per_100g`, `protein_per_100g`, `carbs_per_100g`, `fat_per_100g`, `fiber_per_100g`
+- **recipes**: `id`, `name`, `instructions`, `total_price`, `user_id`, `servings`
 - **recipe_ingredients**: `recipe_id`, `ingredient_id`, `quantity`, `quantity_unit`
+- **schema_version**: `version` (for migration tracking)
 
 ## Personal Use
 

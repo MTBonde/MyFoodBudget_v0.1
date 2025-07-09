@@ -16,29 +16,44 @@ This document defines the organizational structure for the MyFoodBudget project 
 - `repositories.py` - Data access layer (Repository pattern)
 - `helpers.py` - Utility functions and decorators
 - `extensions.py` - Flask extension initialization
+- `error_handlers.py` - Custom error handling and HTTP error responses
+- `exceptions.py` - Custom exception classes for application errors
+- `logging_config.py` - Centralized logging configuration
+- `migrations.py` - Database migration system for schema updates
+- `manage.py` - CLI commands for database operations
 - `db_helper.py` - Database utility functions
-- `db_init.py` - Database schema initialization
+- `db_init.py` - Database schema initialization (legacy)
 
 ### Database Files
 - `myfoodbudget.db` - SQLite database file (development)
 
 ### Configuration Files
-- `requirements.txt` - Python package dependencies
+- `requirements.txt` - Python package dependencies (production)
+- `requirements-dev.txt` - Development dependencies (pytest, coverage)
 - `CLAUDE.md` - Claude Code guidance (root level for visibility)
+- `Dockerfile` - Container configuration for deployment
+- `entrypoint.sh` - Docker entrypoint script
 
 ## Directory Structure
 
 ```
 MyFoodBudget/
-├── docs/                    # Documentation files
-├── static/                  # Static web assets
-│   ├── css/                # Stylesheets
-│   ├── js/                 # JavaScript files
-│   └── images/             # Images and icons (future)
-├── templates/              # Jinja2 HTML templates
-├── tests/                  # Test files
-├── flask_session/          # Flask session storage
-└── [root files]           # Core application files
+├── barcode/                # Barcode scanning module
+│   ├── readers/           # API readers for nutrition data
+│   └── [scanner files]    # Barcode processing logic
+├── docs/                  # Documentation files
+├── logs/                  # Application logs
+├── static/                # Static web assets
+│   ├── css/              # Stylesheets
+│   ├── js/               # JavaScript files
+│   └── images/           # Images and icons (future)
+├── templates/             # Jinja2 HTML templates
+│   └── errors/           # Error page templates
+├── tests/                 # Test files
+│   └── flask_session/    # Test session storage
+├── flask_session/         # Flask session storage
+├── local_tests/          # Local development tests
+└── [root files]          # Core application files
 ```
 
 ## Documentation (`docs/`)
@@ -49,7 +64,10 @@ MyFoodBudget/
 - `README.md` - Project overview and features
 - `tasks.md` - Development task tracking and roadmap
 - `unitTest_guidelines.md` - Testing conventions and standards
-- `design.md` - UI/UX design specifications (if moved from root)
+- `project-structure.md` - This file - project organization guide
+- `design.md` - UI/UX design specifications (future)
+- `nutrition-feature-plan.md` - Nutrition system architecture documentation
+- `cicd-homelab-plan.md` - CI/CD deployment planning
 - `api-docs.md` - API documentation (future)
 - `deployment.md` - Deployment instructions (future)
 
@@ -109,6 +127,11 @@ MyFoodBudget/
 - `conftest.py` - Pytest configuration and fixtures
 - `test_userauth.py` - User authentication tests
 - `test_ingredient_service.py` - Ingredient service tests
+- `test_nutrition_service.py` - Nutrition data service tests
+- `test_barcode_module.py` - Barcode scanning module tests
+- `test_integration_barcode.py` - End-to-end barcode integration tests
+- `test_database_schema.py` - Database schema validation tests
+- `test_config_environment.py` - Configuration and environment tests
 - `test_recipe_service.py` - Recipe service tests (future)
 - `test_routes_auth.py` - Authentication route tests (future)
 - `test_routes_ingredient.py` - Ingredient route tests (future)

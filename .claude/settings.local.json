@@ -5,7 +5,8 @@
       "Bash(pytest:*)",
       "Bash(grep:*)",
       "Bash(python:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "WebFetch(domain:docs.anthropic.com)"
     ],
     "deny": []
   }

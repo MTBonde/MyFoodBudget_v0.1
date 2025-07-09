@@ -221,6 +221,14 @@ flask_session/
 *.db
 myfoodbudget.db
 
+# Application logs
+logs/
+*.log
+
+# Development and backup files
+complete-requirements.txt
+backup_*.db
+
 # Scrapy stuff:
 .scrapy
 

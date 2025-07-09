@@ -54,6 +54,17 @@ pytest tests/test_userauth.py           # Run specific test file
 pytest tests/test_userauth.py::test_register_user_success  # Run specific test function
 ```
 
+**Code Quality (Add these tools to requirements-dev.txt):**
+```bash
+# Code formatting and linting (install with: pip install flake8 black)
+flake8 .                                 # Check code style and potential issues
+black .                                  # Auto-format code to PEP 8 standards
+black --check .                          # Check if code needs formatting (CI/CD)
+
+# Type checking (install with: pip install mypy)
+mypy .                                   # Static type checking
+```
+
 **Database Setup:**
 ```bash
 python db_init.py
@@ -156,10 +167,10 @@ Ingredients (M) ←→ (M) Recipes
 ## Development Notes
 
 **Current Limitations**:
-- Manual database schema creation (no Flask-Migrate)
+- **CRITICAL**: Multi-user data isolation not implemented (users can see each other's data)
 - Monolithic routes file instead of blueprints
-- Limited error handling and logging
-- Hardcoded configuration values
+- Hardcoded configuration values (SECRET_KEY, database path)
+- Limited client-side validation and CSRF protection
 
 **Database Migration System**:
 - `migrations.py`: Database migration system to handle schema changes
@@ -174,3 +185,6 @@ Ingredients (M) ←→ (M) Recipes
 - `services.py`: Add new business logic
 - `routes.py`: Add new endpoints (consider blueprint refactoring for large changes)
 - `migrations.py`: Add new database migrations for schema changes
+- `error_handlers.py`: Add new custom error handlers
+- `exceptions.py`: Add new custom exception classes
+- `barcode/`: Extend barcode scanning and nutrition lookup capabilities
