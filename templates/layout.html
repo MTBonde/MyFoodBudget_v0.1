@@ -5,11 +5,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="initial-scale=1, width=device-width">
 
-    <!-- http://getbootstrap.com/docs/5.3/ -->
+    <!-- Bootstrap CSS for modal functionality only -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
+    
     <link href="/static/css/styles.css" rel="stylesheet">
+    
+    <!-- Bootstrap JS for modal functionality -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     
     <!-- QuaggaJS for barcode scanning -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
@@ -17,32 +19,43 @@
     <title>MyFoodBudget: {% block title %}{% endblock %}</title>
 </head>
 
-<body>
-    <nav class="bg-dark border navbar navbar-expand-md navbar-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand my-food-budget" href="/">My Food Budget</a>
-            <button aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler" data-bs-target="#navbar" data-bs-toggle="collapse" type="button">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbar">
-                {% if session["user_id"] %}
-                <ul class="navbar-nav ms-auto mt-2">
-                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/ingredients">Ingredients</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/recipes">Recipes</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/add_ingredient">Add Ingredient</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/add_meal">Add Recipe</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/logout">Log Out</a></li>
-                </ul>
+<body data-theme="light" class="min-h-screen flex flex-col app-bg">
+    <!-- App Header -->
+    <header class="sticky top-0 z-40 header-bg text-white shadow-md">
+        <div class="max-w-screen-md mx-auto px-4 py-3 flex items-center justify-between">
+            <div>
+                <h1 class="text-xl font-semibold tracking-tight">MyFoodBudget</h1>
+                <p class="text-sm opacity-90">Track spending, plan meals, keep nutrition accountable.</p>
+            </div>
+            <div class="flex items-center gap-2">
+                {% if not session["user_id"] %}
+                <!-- Guest user buttons -->
+                <a href="/register" class="header-btn">
+                    <span class="header-btn-icon">👤</span>
+                    <span class="header-btn-text">Sign Up</span>
+                </a>
+                <a href="/login" class="header-btn-primary">
+                    <span class="header-btn-icon">🔓</span>
+                    <span class="header-btn-text">Log In</span>
+                </a>
                 {% else %}
-                <ul class="navbar-nav ms-auto mt-2">
-                    <li class="nav-item"><a class="nav-link" href="/register">Register</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/login">Log In</a></li>
-                </ul>
+                <!-- Logged in user buttons -->
+                <button id="theme-toggle" class="header-btn" aria-label="Toggle theme">
+                    <span class="header-btn-icon" id="theme-icon">🌙</span>
+                    <span class="header-btn-text" id="theme-toggle-text">Dark</span>
+                </button>
+                <button class="header-btn" aria-label="Quick scan" onclick="document.getElementById('scanProductBtn').click()">
+                    <span class="header-btn-icon">📱</span>
+                    <span class="header-btn-text">Scan</span>
+                </button>
+                <a href="/add_ingredient" class="header-btn">
+                    <span class="header-btn-icon">➕</span>
+                    <span class="header-btn-text">Add</span>
+                </a>
                 {% endif %}
             </div>
         </div>
-    </nav>
+    </header>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -64,28 +77,43 @@
         {% endif %}
     {% endwith %}
 
-    <main class="container py-5 text-center">
+    <main class="flex-1 overflow-y-auto pb-28 px-4" aria-live="polite">
         {% block main %}{% endblock %}
     </main>
 
-    <footer class="footer">
-        <div class="container text-center">
-            <ul class="list-inline mb-0">
-                <li class="list-inline-item"><a href="/">Home</a></li>
-                <li class="list-inline-item"><a href="/about">About</a></li>
-                <li class="list-inline-item"><a href="/contact">Contact</a></li>
-                <li class="list-inline-item"><a href="/privacy-policy">Privacy Policy</a></li>
-                <li class="list-inline-item"><a href="/terms-service">Terms of Service</a></li>
-            </ul>
-            <div>
-                <!-- Social Media Links -->
-            </div>
-            <div>
-                <!-- Newsletter Signup -->
-                </form>
-            </div>
+    <!-- Floating Action Button -->
+    {% if session["user_id"] %}
+    <button class="fab" aria-label="Add Ingredient Now" onclick="window.location.href='/add_ingredient'">+</button>
+    {% endif %}
+
+    <!-- Mobile Bottom Navigation -->
+    {% if session["user_id"] %}
+    <nav class="bottom-nav" aria-label="Main navigation">
+        <div class="bottom-nav-grid">
+            <a href="/" class="bottom-nav-item {{ 'active' if request.endpoint == 'index' }}">
+                <div class="bottom-nav-icon">📊</div>
+                Dashboard
+            </a>
+            <a href="/recipes" class="bottom-nav-item {{ 'active' if request.endpoint == 'recipes' }}">
+                <div class="bottom-nav-icon">📖</div>
+                Recipes
+            </a>
+            <a href="/ingredients" class="bottom-nav-item {{ 'active' if request.endpoint == 'ingredients' }}">
+                <div class="bottom-nav-icon">🥕</div>
+                Ingredients
+            </a>
+            <a href="/add_meal" class="bottom-nav-item {{ 'active' if request.endpoint == 'add_meal' }}">
+                <div class="bottom-nav-icon">📝</div>
+                Plan
+            </a>
+            <a href="/logout" class="bottom-nav-item">
+                <div class="bottom-nav-icon">🚪</div>
+                Logout
+            </a>
         </div>
-    </footer>
+    </nav>
+    {% endif %}
+
 
     <!-- Barcode Scanner Modal -->
     <div class="modal fade" id="scannerModal" tabindex="-1" aria-labelledby="scannerModalLabel" aria-hidden="true">
@@ -114,7 +142,47 @@
     </div>
 
     <script>
+    // Theme toggle functionality
     document.addEventListener('DOMContentLoaded', function() {
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeToggleText = document.getElementById('theme-toggle-text');
+        const themeIcon = document.getElementById('theme-icon');
+        const body = document.body;
+        
+        // Get saved theme from localStorage or default to light
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        body.setAttribute('data-theme', savedTheme);
+        
+        // Update button text and icon based on current theme
+        function updateThemeToggleText() {
+            const currentTheme = body.getAttribute('data-theme');
+            if (themeToggleText && themeIcon) {
+                if (currentTheme === 'dark') {
+                    themeToggleText.textContent = 'Light';
+                    themeIcon.textContent = '☀️';
+                } else {
+                    themeToggleText.textContent = 'Dark';
+                    themeIcon.textContent = '🌙';
+                }
+            }
+        }
+        
+        // Initialize button text and icon
+        updateThemeToggleText();
+        
+        // Theme toggle handler
+        if (themeToggle) {
+            themeToggle.addEventListener('click', function() {
+                const currentTheme = body.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                body.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                updateThemeToggleText();
+            });
+        }
+        
+        // Barcode scanner functionality
         const scannerModal = document.getElementById('scannerModal');
         const scannerStatus = document.getElementById('scanner-status');
         let scannerInitialized = false;

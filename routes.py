@@ -25,7 +25,54 @@ def init_routes(app):
     @app.route('/')
     def home():
         if 'user_id' in session:
-            return render_template("index.html", user=session.get('user_id'))
+            try:
+                # Get user's ingredients and recipes for dashboard metrics
+                ingredients = get_all_ingredients()
+                recipes = get_all_recipes()
+                
+                # Calculate metrics
+                ingredients_count = len(ingredients) if ingredients else 0
+                recipes_count = len(recipes) if recipes else 0
+                
+                # Get latest ingredient name
+                latest_ingredient_name = None
+                if ingredients:
+                    latest_ingredient = max(ingredients, key=lambda x: x.get('id', 0))
+                    latest_ingredient_name = latest_ingredient.get('name')
+                
+                # Combine recent items (simplified)
+                recent_items = []
+                if ingredients:
+                    for ingredient in ingredients[-3:]:
+                        recent_items.append({
+                            'name': f"Added ingredient: {ingredient.get('name')}",
+                            'type': 'Ingredient'
+                        })
+                if recipes:
+                    for recipe in recipes[-2:]:
+                        recent_items.append({
+                            'name': f"Created recipe: {recipe.get('name')}",
+                            'type': 'Recipe'
+                        })
+                
+                # Sort recent items by adding newest first
+                recent_items = recent_items[-5:]  # Last 5 items
+                
+                return render_template("index.html", 
+                                     user=session.get('user_id'),
+                                     ingredients_count=ingredients_count,
+                                     recipes_count=recipes_count,
+                                     latest_ingredient_name=latest_ingredient_name,
+                                     recent_items=recent_items)
+            except Exception as e:
+                logger.error(f"Error loading dashboard data: {str(e)}")
+                # Fallback to basic dashboard
+                return render_template("index.html", 
+                                     user=session.get('user_id'),
+                                     ingredients_count=0,
+                                     recipes_count=0,
+                                     latest_ingredient_name=None,
+                                     recent_items=[])
         else:
             return render_template("landing.html")
 

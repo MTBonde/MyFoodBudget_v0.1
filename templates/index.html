@@ -5,39 +5,64 @@
 {% endblock %}
 
 {% block main %}
-    <div class="container">
-        <!-- Welcome Message -->
-        <h2 class="my-4">Welcome Back!</h2>
-
-        <!-- Dashboard Hero Section -->
-        <section class="hero card text-center py-5 my-5">
-            <div class="card-body">
-                <h1>Your Food Budget Dashboard</h1>
-                <p>Keep track of your meals, recipes, and ingredients all in one place.</p>
-                <a href="/add_meal" class="btn btn-yellow">Add New Meal</a>
-                <!-- Scan Product CTA for logged-in users -->
-                <a href="#" class="btn btn-outline-primary ms-2" id="scanProductBtn" data-bs-toggle="modal" data-bs-target="#scannerModal">
-                    <i class="fas fa-qrcode"></i> Scan Product
-                </a>
+    <section class="max-w-screen-md mx-auto mt-4 space-y-4" aria-label="Dashboard Overview">
+        <!-- Key Metrics Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="surface border-app rounded-2xl shadow-md p-4">
+                <p class="text-sm text-muted">Your Ingredients</p>
+                <p class="mt-1 text-xl font-semibold">{{ ingredients_count or 0 }}</p>
+                <p class="mt-1 text-sm text-muted">Items tracked</p>
             </div>
-        </section>
-
-        <!-- Dashboard Overview -->
-        <div class="row">
-            <div class="col-md-6 text-center mb-3">
-                <section id="dashboard-overview">
-                    <h2>Your Dashboard</h2>
-                    <p>View your recent activities, favorite recipes, and an overview of your budget.</p>
-                    <a href="/dashboard" class="btn btn-info">View Detailed Dashboard</a>
-                </section>
+            <div class="surface border-app rounded-2xl shadow-md p-4">
+                <p class="text-sm text-muted">Your Recipes</p>
+                <p class="mt-1 text-xl font-semibold">{{ recipes_count or 0 }}</p>
+                <p class="mt-1 text-sm text-muted">Recipes created</p>
             </div>
-            <div class="col-md-6 text-center mb-3">
-                <section id="insights">
-                    <h2>Statistics &amp; Insights</h2>
-                    <p>Analyze your spending, track your most used ingredients, and discover ways to optimize your budget.</p>
-                    <a href="/insights" class="btn btn-secondary">View Insights</a>
-                </section>
+            <div class="surface border-app rounded-2xl shadow-md p-4">
+                <p class="text-sm text-muted">Latest Addition</p>
+                <p class="mt-1 text-xl font-semibold">{{ latest_ingredient_name or 'None yet' }}</p>
+                <p class="mt-1 text-sm text-muted">Most recent ingredient</p>
             </div>
         </div>
-    </div>
+
+        <!-- Getting Started -->
+        {% if not ingredients_count and not recipes_count %}
+        <div class="surface border-app rounded-2xl shadow-md p-4" aria-label="Getting Started">
+            <h2 class="text-base font-semibold mb-2">Welcome to MyFoodBudget! 👋</h2>
+            <p class="text-sm text-muted mb-3">Get started by adding your first ingredient or creating a recipe to track your food expenses and plan meals.</p>
+            <div class="primary-wash rounded-xl p-3">
+                <p class="text-sm font-medium">💡 Quick tip: Use the barcode scanner to quickly add ingredients with automatic price lookup!</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Recent Activity -->
+        {% if recent_items %}
+        <div class="surface border-app rounded-2xl shadow-md p-4" aria-label="Recent Activity">
+            <h2 class="text-base font-semibold mb-3">Recent Activity</h2>
+            <ul class="divide-app">
+                {% for item in recent_items[:3] %}
+                <li class="py-2">
+                    <p class="text-sm font-medium">{{ item.name }}</p>
+                    <p class="text-xs text-muted mt-0.5">{{ item.type }}</p>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <!-- Quick Actions -->
+        <div class="surface border-app rounded-2xl shadow-md p-4">
+            <h2 class="text-base font-semibold mb-2">Quick Actions</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <button class="btn-primary" aria-label="Add Ingredient Now" onclick="window.location.href='/add_ingredient'">Add Ingredient</button>
+                <button class="btn-secondary" aria-label="Create New Recipe" onclick="window.location.href='/add_meal'">Create Recipe</button>
+                <button class="btn-secondary" aria-label="View All Ingredients" onclick="window.location.href='/ingredients'">View Ingredients</button>
+                <button class="btn-secondary" aria-label="Scan Product" onclick="document.getElementById('scanProductBtn').click()">Scan Product</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Hidden button for barcode scanner modal trigger -->
+    <button id="scanProductBtn" style="display: none;" data-bs-toggle="modal" data-bs-target="#scannerModal"></button>
 {% endblock %}
