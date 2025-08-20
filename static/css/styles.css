@@ -147,6 +147,27 @@
 .gap-2 { gap: 0.5rem; }
 .w-full { width: 100%; }
 .max-w-screen-md { max-width: 768px; }
+.max-w-screen-lg { max-width: 1024px; }
+.max-w-screen-xl { max-width: 1280px; }
+
+/* Responsive container classes */
+.container-responsive {
+  max-width: 768px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 768px) {
+  .container-responsive { max-width: 1024px; }
+}
+
+@media (min-width: 1024px) {
+  .container-responsive { max-width: 1200px; }
+}
+
+@media (min-width: 1280px) {
+  .container-responsive { max-width: 1400px; }
+}
 .mx-auto { margin-left: auto; margin-right: auto; }
 .text-xl { font-size: 1.25rem; }
 .text-lg { font-size: 1.125rem; }
@@ -178,6 +199,29 @@
   .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .sm\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .sm\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (min-width: 768px) {
+  .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .md\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .md\:grid-cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .md\:grid-cols-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1024px) {
+  .lg\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .lg\:grid-cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .lg\:grid-cols-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1280px) {
+  .xl\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .xl\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .xl\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .xl\:grid-cols-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 }
 
 /* Base styles for mobile first */
@@ -436,6 +480,87 @@ p {
 /* Success state styling */
 .success-text { color: var(--success-600); }
 
+/* Form container responsive sizing */
+.form-container {
+  max-width: 100%;
+}
+
+@media (min-width: 768px) {
+  .form-container { max-width: 600px; margin-left: auto; margin-right: auto; }
+}
+
+/* Desktop navigation styles */
+.desktop-nav {
+  display: none; /* Hidden by default on mobile */
+}
+
+@media (min-width: 1024px) {
+  .desktop-nav {
+    display: flex !important; /* Show on desktop */
+  }
+}
+
+.desktop-nav .nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.8);
+  background: transparent;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  min-width: 60px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.desktop-nav .nav-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.desktop-nav .nav-item.active {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+.desktop-nav .nav-icon {
+  font-size: 1.25rem;
+  margin-bottom: 0.25rem;
+  line-height: 1;
+}
+
+.desktop-nav .nav-text {
+  font-size: 0.625rem;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Desktop layout improvements */
+@media (min-width: 1024px) {
+  /* Hide bottom navigation on desktop, show header nav */
+  .bottom-nav { display: none; }
+  
+  /* Remove bottom padding when no bottom nav */
+  .desktop-main { padding-bottom: 1rem !important; }
+  
+  /* Adjust floating button position */
+  .fab { bottom: 1rem; }
+}
+
+/* Mobile layout - hide desktop nav, show bottom nav */
+@media (max-width: 1023px) {
+  .desktop-nav { display: none !important; }
+  .bottom-nav { display: block; }
+}
+
 /* Additional utility classes for landing page */
 .w-8 { width: 2rem; }
 .h-8 { height: 2rem; }
@@ -449,3 +574,20 @@ p {
 .mt-1 { margin-top: 0.25rem; }
 .rounded-full { border-radius: 9999px; }
 .block { display: block; }
+
+/* Missing utility classes for responsive layout */
+.hidden { display: none; }
+
+/* Large screen utilities */
+.lg\\:flex { display: flex; }
+
+@media (min-width: 1024px) {
+  .lg\\:flex { display: flex !important; }
+  .hidden.lg\\:flex { display: flex !important; }
+}
+
+/* Ensure header brand link is clickable */
+header a {
+  cursor: pointer !important;
+  text-decoration: none;
+}

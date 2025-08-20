@@ -5,9 +5,9 @@
 {% endblock %}
 
 {% block main %}
-    <section class="max-w-screen-md mx-auto mt-4 space-y-4" aria-label="Dashboard Overview">
+    <section class="container-responsive mt-4 space-y-4" aria-label="Dashboard Overview">
         <!-- Key Metrics Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-3">
             <div class="surface border-app rounded-2xl shadow-md p-4">
                 <p class="text-sm text-muted">Your Ingredients</p>
                 <p class="mt-1 text-xl font-semibold">{{ ingredients_count or 0 }}</p>
@@ -54,7 +54,7 @@
         <!-- Quick Actions -->
         <div class="surface border-app rounded-2xl shadow-md p-4">
             <h2 class="text-base font-semibold mb-2">Quick Actions</h2>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-6 gap-2">
                 <button class="btn-primary" aria-label="Add Ingredient Now" onclick="window.location.href='/add_ingredient'">Add Ingredient</button>
                 <button class="btn-secondary" aria-label="Create New Recipe" onclick="window.location.href='/add_meal'">Create Recipe</button>
                 <button class="btn-secondary" aria-label="View All Ingredients" onclick="window.location.href='/ingredients'">View Ingredients</button>
