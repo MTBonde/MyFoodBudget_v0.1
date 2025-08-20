@@ -120,10 +120,13 @@ python manage.py reset-db         # Reset database (WARNING: loses all data)
 
 ```
 Users (1) ← Sessions
-↓
+↓         ↓  
 Ingredients (M) ←→ (M) Recipes
          ↑              ↓
          └── RecipeIngredients ──┘
+         
+User → Ingredients (1:M via user_id FK)
+User → Recipes (1:M via user_id FK)
 ```
 
 ## Testing Framework
@@ -167,7 +170,7 @@ Ingredients (M) ←→ (M) Recipes
 ## Development Notes
 
 **Current Limitations**:
-- **CRITICAL**: Multi-user data isolation not implemented (users can see each other's data)
+- ~~**CRITICAL**: Multi-user data isolation not implemented~~ ✅ **FIXED JANUARY 2025**
 - Monolithic routes file instead of blueprints
 - Hardcoded configuration values (SECRET_KEY, database path)
 - Limited client-side validation and CSRF protection

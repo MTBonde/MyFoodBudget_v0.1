@@ -37,21 +37,21 @@ def init_routes(app):
                 # Get latest ingredient name
                 latest_ingredient_name = None
                 if ingredients:
-                    latest_ingredient = max(ingredients, key=lambda x: x.get('id', 0))
-                    latest_ingredient_name = latest_ingredient.get('name')
+                    latest_ingredient = max(ingredients, key=lambda x: x.id)
+                    latest_ingredient_name = latest_ingredient.name
                 
                 # Combine recent items (simplified)
                 recent_items = []
                 if ingredients:
                     for ingredient in ingredients[-3:]:
                         recent_items.append({
-                            'name': f"Added ingredient: {ingredient.get('name')}",
+                            'name': f"Added ingredient: {ingredient.name}",
                             'type': 'Ingredient'
                         })
                 if recipes:
                     for recipe in recipes[-2:]:
                         recent_items.append({
-                            'name': f"Created recipe: {recipe.get('name')}",
+                            'name': f"Created recipe: {recipe.name}",
                             'type': 'Recipe'
                         })
                 

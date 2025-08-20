@@ -39,6 +39,7 @@ class Ingredient(db.Model):
     price = db.Column(db.Float, nullable=False)
     barcode = db.Column(db.String(50), nullable=True, unique=True, index=True)
     brand = db.Column(db.String(100), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
     
     # Nutrition fields (all per 100g basis)
     calories = db.Column(db.Float, nullable=True)
@@ -46,6 +47,9 @@ class Ingredient(db.Model):
     carbohydrates = db.Column(db.Float, nullable=True)
     fat = db.Column(db.Float, nullable=True)
     fiber = db.Column(db.Float, nullable=True)
+    
+    # Relationship to User
+    user = db.relationship('User', backref=db.backref('ingredients', lazy=True))
 
 
 # Recipe model: stores recipes.
@@ -58,7 +62,11 @@ class Recipe(db.Model):
     name = db.Column(db.Text, nullable=False)
     instructions = db.Column(db.Text)
     total_price = db.Column(db.Float)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
 
+    # Relationship to User
+    user = db.relationship('User', backref=db.backref('recipes', lazy=True))
+    
     # Define relationship with RecipeIngredient with cascade deletion.
     recipe_ingredients = db.relationship(
         'RecipeIngredient',

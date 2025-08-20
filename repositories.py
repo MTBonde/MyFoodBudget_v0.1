@@ -44,14 +44,15 @@ def find_by_username(username):
     return User.query.filter_by(username=username).first()
 
 
-def add_ingredient(name, quantity, quantity_unit, price, barcode=None, brand=None, nutrition=None):
+def add_ingredient(name, quantity, quantity_unit, price, user_id, barcode=None, brand=None, nutrition=None):
     """
-    Adds a new ingredient to the database.
+    Adds a new ingredient to the database for a specific user.
     Args:
         name (str): The name of the ingredient.
         quantity (float): The amount of the ingredient.
         quantity_unit (str): The unit of measurement for the quantity (e.g., kg, g, l).
         price (float): The price of the ingredient.
+        user_id (int): The ID of the user who owns this ingredient.
         barcode (str, optional): The barcode of the ingredient.
         brand (str, optional): The brand of the ingredient.
         nutrition (dict, optional): Dictionary containing nutrition data (calories, protein, carbohydrates, fat, fiber).
@@ -76,6 +77,7 @@ def add_ingredient(name, quantity, quantity_unit, price, barcode=None, brand=Non
         quantity=quantity, 
         quantity_unit=quantity_unit, 
         price=price, 
+        user_id=user_id,
         barcode=barcode, 
         brand=brand,
         **nutrition_data
@@ -89,17 +91,18 @@ def add_ingredient(name, quantity, quantity_unit, price, barcode=None, brand=Non
         return None
 
 
-def add_recipe(name, instructions, total_price):
+def add_recipe(name, instructions, total_price, user_id):
     """
-    Adds a new recipe to the database.
+    Adds a new recipe to the database for a specific user.
     Args:
         name (str): The name of the recipe.
         instructions (str): Cooking instructions for the recipe.
         total_price (float): The total cost to prepare the recipe.
+        user_id (int): The ID of the user who owns this recipe.
     Returns:
         recipe (Recipe): The newly created recipe object if successful, None otherwise.
     """
-    new_recipe = Recipe(name=name, instructions=instructions, total_price=total_price)
+    new_recipe = Recipe(name=name, instructions=instructions, total_price=total_price, user_id=user_id)
     try:
         db.session.add(new_recipe)
         db.session.commit()
@@ -165,31 +168,37 @@ def find_recipes_using_ingredient(ingredient_name):
 
 
 
-def get_all_ingredients_from_db():
+def get_all_ingredients_from_db(user_id):
     """
-    Retrieves all ingredients from the database.
+    Retrieves all ingredients from the database for a specific user.
+    Args:
+        user_id (int): The ID of the user whose ingredients to retrieve.
     Returns:
-        List[Ingredient]: A list of all ingredient objects.
+        List[Ingredient]: A list of ingredient objects belonging to the user.
     """
-    return Ingredient.query.all()
+    return Ingredient.query.filter_by(user_id=user_id).all()
 
 
-def get_all_recipes_from_db():
+def get_all_recipes_from_db(user_id):
     """
-    Retrieves all recipes from the database.
+    Retrieves all recipes from the database for a specific user.
+    Args:
+        user_id (int): The ID of the user whose recipes to retrieve.
     Returns:
-        List[Recipe]: A list of all recipe objects.
+        List[Recipe]: A list of recipe objects belonging to the user.
     """
-    return Recipe.query.all()
+    return Recipe.query.filter_by(user_id=user_id).all()
 
 
-def get_all_recipes_with_ingredients_from_db():
+def get_all_recipes_with_ingredients_from_db(user_id):
     """
-    Retrieves all recipes with their ingredients from the database.
+    Retrieves all recipes with their ingredients from the database for a specific user.
+    Args:
+        user_id (int): The ID of the user whose recipes to retrieve.
     Returns:
-        List[dict]: A list of recipes with their associated ingredients.
+        List[dict]: A list of recipes with their associated ingredients belonging to the user.
     """
-    recipes = Recipe.query.all()
+    recipes = Recipe.query.filter_by(user_id=user_id).all()
     recipes_with_ingredients = []
 
     for recipe in recipes:

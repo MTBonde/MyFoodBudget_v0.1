@@ -235,6 +235,23 @@ def create_migrations() -> List[Migration]:
         up_func=add_user_id_to_ingredients
     ))
     
+    # Migration 4: Add user_id to recipes (for multi-user support)
+    def add_user_id_to_recipes(cursor):
+        """Add user_id column to recipes for multi-user support."""
+        try:
+            cursor.execute('ALTER TABLE recipes ADD COLUMN user_id INTEGER')
+            # Add foreign key constraint (note: SQLite has limited FK support)
+            # cursor.execute('ALTER TABLE recipes ADD CONSTRAINT fk_recipe_user_id FOREIGN KEY (user_id) REFERENCES users(id)')
+        except sqlite3.OperationalError as e:
+            if "duplicate column name" not in str(e).lower():
+                raise
+    
+    migrations.append(Migration(
+        version=4,
+        description="Add user_id to recipes for multi-user support",
+        up_func=add_user_id_to_recipes
+    ))
+    
     return migrations
 
 
