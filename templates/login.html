@@ -5,19 +5,58 @@
 {% endblock %}
 
 {% block main %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <form action="/login" method="post" class="text-center p-4 bg-white rounded shadow-sm">
-                <h2 class="mb-4">Log In</h2>
-                <div class="mb-3">
-                    <input autocomplete="off" autofocus class="form-control" name="username" placeholder="Username" type="text" required>
-                </div>
-                <div class="mb-3">
-                    <input class="form-control" name="password" placeholder="Password" type="password" required>
-                </div>
-                <button class="btn btn-yellow" type="submit">Log In</button>
-            </form>
+<div class="max-w-screen-md mx-auto mt-4 px-4">
+    <div class="space-y-4">
+        <!-- Welcome back card -->
+        <div class="surface border-app rounded-2xl shadow-md p-4 text-center">
+            <h1 class="text-xl font-semibold mb-2">Welcome Back!</h1>
+            <p class="text-sm text-muted">Sign in to continue managing your food budget</p>
+        </div>
+        
+        <!-- Login form -->
+        <form action="/login" method="post" class="surface border-app rounded-2xl shadow-md p-4 space-y-4">
+            <h2 class="text-lg font-semibold text-center">Log In to Your Account</h2>
+            
+            <div>
+                <label for="username" class="block text-sm font-medium text-strong mb-1">Username</label>
+                <input 
+                    id="username"
+                    autocomplete="off" 
+                    autofocus 
+                    name="username" 
+                    placeholder="Enter your username" 
+                    type="text" 
+                    required
+                    class="w-full"
+                >
+            </div>
+            
+            <div>
+                <label for="password" class="block text-sm font-medium text-strong mb-1">Password</label>
+                <input 
+                    id="password"
+                    name="password" 
+                    placeholder="Enter your password" 
+                    type="password" 
+                    required
+                    class="w-full"
+                >
+            </div>
+            
+            <button class="btn-primary w-full" type="submit">
+                Log In
+            </button>
+        </form>
+        
+        <!-- Sign up prompt -->
+        <div class="surface border-app rounded-2xl shadow-md p-4 text-center">
+            <p class="text-sm text-muted mb-2">Don't have an account yet?</p>
+            <a href="/register" class="btn-secondary">Create Account</a>
+        </div>
+        
+        <!-- Features reminder -->
+        <div class="primary-wash rounded-xl p-3 text-center">
+            <p class="text-sm font-medium">📱 Barcode scanning • 🥕 Ingredient tracking • 📖 Recipe management</p>
         </div>
     </div>
 </div>

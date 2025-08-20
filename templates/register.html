@@ -5,25 +5,103 @@
 {% endblock %}
 
 {% block main %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <form action="/register" method="post" class="text-center p-4 bg-white rounded shadow-sm">
-                <h2 class="mb-4">Register</h2>
-                <div class="mb-3">
-                    <input autocomplete="off" autofocus class="form-control" name="username" placeholder="Username" type="text" required>
+<div class="max-w-screen-md mx-auto mt-4 px-4">
+    <div class="space-y-4">
+        <!-- Welcome card -->
+        <div class="surface border-app rounded-2xl shadow-md p-4 text-center">
+            <h1 class="text-xl font-semibold mb-2">Create Your Account</h1>
+            <p class="text-sm text-muted">Start tracking your food budget and managing your recipes</p>
+        </div>
+        
+        <!-- Benefits preview -->
+        <div class="success-wash rounded-xl p-3">
+            <h2 class="text-sm font-semibold mb-2">🎯 What you'll get:</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                <div class="text-center">
+                    <div>📱 Barcode scanning</div>
                 </div>
-                <div class="mb-3">
-                    <input autocomplete="off" class="form-control" name="email" placeholder="Email" type="email" required>
+                <div class="text-center">
+                    <div>💰 Cost tracking</div>
                 </div>
-                <div class="mb-3">
-                    <input class="form-control" name="password" placeholder="Password" type="password" required>
+                <div class="text-center">
+                    <div>📖 Recipe management</div>
                 </div>
-                <div class="mb-3">
-                    <input class="form-control" name="confirmation" placeholder="Confirm Password" type="password" required>
-                </div>
-                <button class="btn btn-yellow" type="submit">Register</button>
-            </form>
+            </div>
+        </div>
+        
+        <!-- Registration form -->
+        <form action="/register" method="post" class="surface border-app rounded-2xl shadow-md p-4 space-y-4">
+            <h2 class="text-lg font-semibold text-center">Create Your Account</h2>
+            
+            <div>
+                <label for="username" class="block text-sm font-medium text-strong mb-1">Username</label>
+                <input 
+                    id="username"
+                    autocomplete="off" 
+                    autofocus 
+                    name="username" 
+                    placeholder="Choose a username" 
+                    type="text" 
+                    required
+                    class="w-full"
+                >
+                <p class="text-xs text-muted mt-1">This will be your unique identifier</p>
+            </div>
+            
+            <div>
+                <label for="email" class="block text-sm font-medium text-strong mb-1">Email Address</label>
+                <input 
+                    id="email"
+                    autocomplete="off" 
+                    name="email" 
+                    placeholder="your.email@example.com" 
+                    type="email" 
+                    required
+                    class="w-full"
+                >
+                <p class="text-xs text-muted mt-1">We'll never share your email</p>
+            </div>
+            
+            <div>
+                <label for="password" class="block text-sm font-medium text-strong mb-1">Password</label>
+                <input 
+                    id="password"
+                    name="password" 
+                    placeholder="Create a secure password" 
+                    type="password" 
+                    required
+                    class="w-full"
+                >
+                <p class="text-xs text-muted mt-1">At least 8 characters recommended</p>
+            </div>
+            
+            <div>
+                <label for="confirmation" class="block text-sm font-medium text-strong mb-1">Confirm Password</label>
+                <input 
+                    id="confirmation"
+                    name="confirmation" 
+                    placeholder="Confirm your password" 
+                    type="password" 
+                    required
+                    class="w-full"
+                >
+                <p class="text-xs text-muted mt-1">Must match your password above</p>
+            </div>
+            
+            <button class="btn-primary w-full" type="submit">
+                Create Account
+            </button>
+        </form>
+        
+        <!-- Login prompt -->
+        <div class="surface border-app rounded-2xl shadow-md p-4 text-center">
+            <p class="text-sm text-muted mb-2">Already have an account?</p>
+            <a href="/login" class="btn-secondary">Log In Instead</a>
+        </div>
+        
+        <!-- Trust indicators -->
+        <div class="primary-wash rounded-xl p-3 text-center">
+            <p class="text-xs text-muted">🔒 Your data is secure • 📱 Works on all devices • 🥕 Track your ingredients</p>
         </div>
     </div>
 </div>

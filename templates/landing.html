@@ -4,47 +4,108 @@
 {% endblock %}
 
 {% block main %}
-    <!-- Hero Section -->
-    <section class="hero card text-center py-5 my-5">
-        <div class="card-body">
-            <h1>Manage Your Food Budget Smartly</h1>
-            <p>Track ingredients, create recipes, and save money effortlessly.</p>
-            <!-- Primary CTA for new users -->
-            <a href="/register" class="btn btn-yellow">Start Saving Now</a>
-            <!--  subtle link for returning users -->
-            <p class="mt-3">Already have an account? <a href="/login">Log In</a></p>
-        </div>
-    </section>
-
-
-    <!-- Who We Are -->
-    <section id="about" class="container py-5">
-        <h2>Who We Are</h2>
-        <p>MyFoodBudget is dedicated to helping you manage your food expenses by tracking ingredients, recipes, and costs.</p>
-    </section>
-
-    <!-- What We Do -->
-    <section id="features" class="container py-5">
-        <h2>What We Do</h2>
-        <div class="row">
-            <div class="col-md-4">
-                <h3>Ingredient Management</h3>
-                <p>Keep track of your ingredients, quantities, and prices.</p>
+    <div class="max-w-screen-md mx-auto mt-4 space-y-4">
+        <!-- Hero Section -->
+        <section class="surface border-app rounded-2xl shadow-md p-4 text-center" aria-label="Welcome">
+            <h1 class="text-xl font-semibold mb-2">Manage Your Food Budget Smartly</h1>
+            <p class="text-muted mb-4">Track ingredients, create recipes, and save money effortlessly with our intuitive mobile-first platform.</p>
+            
+            <div class="primary-wash rounded-xl p-3 mb-4">
+                <p class="text-sm font-medium">🎯 Take control of your food spending with detailed tracking and insights</p>
             </div>
-            <div class="col-md-4">
-                <h3>Recipe Management</h3>
-                <p>Create and manage recipes with automatic cost calculations.</p>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <a href="/register" class="btn-primary">
+                    Create Account
+                </a>
+                <a href="/login" class="btn-secondary">
+                    Log In
+                </a>
             </div>
-            <div class="col-md-4">
-                <h3>Cost Tracking</h3>
-                <p>Get an overview of your food budget and discover ways to save money.</p>
-            </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- How We Can Help You -->
-    <section id="help" class="container py-5">
-        <h2>How We Can Help You</h2>
-        <p>Discover how MyFoodBudget can make your daily shopping and cooking more cost-effective and streamlined.</p>
-    </section>
+        <!-- Key Features -->
+        <section class="space-y-3" aria-label="Key Features">
+            <h2 class="text-lg font-semibold text-center">Everything You Need to Save Money</h2>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="surface border-app rounded-2xl shadow-md p-4 text-center">
+                    <div class="text-2xl mb-2">📱</div>
+                    <h3 class="text-base font-semibold mb-1">Barcode Scanning</h3>
+                    <p class="text-sm text-muted">Quickly add ingredients by scanning product barcodes with your phone camera.</p>
+                </div>
+                
+                <div class="surface border-app rounded-2xl shadow-md p-4 text-center">
+                    <div class="text-2xl mb-2">🥕</div>
+                    <h3 class="text-base font-semibold mb-1">Ingredient Tracking</h3>
+                    <p class="text-sm text-muted">Keep track of your ingredient names, quantities, and prices in one place.</p>
+                </div>
+                
+                <div class="surface border-app rounded-2xl shadow-md p-4 text-center">
+                    <div class="text-2xl mb-2">📖</div>
+                    <h3 class="text-base font-semibold mb-1">Recipe Costing</h3>
+                    <p class="text-sm text-muted">Create recipes with automatic cost calculations to plan budget-friendly meals.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works -->
+        <section class="surface border-app rounded-2xl shadow-md p-4" aria-label="How It Works">
+            <h2 class="text-lg font-semibold mb-3 text-center">How MyFoodBudget Works</h2>
+            
+            <div class="space-y-3">
+                <div class="flex items-start gap-3">
+                    <div class="primary-wash rounded-full w-8 h-8 flex items-center justify-center font-semibold text-sm">1</div>
+                    <div>
+                        <h3 class="font-semibold text-sm">Scan or Add Ingredients</h3>
+                        <p class="text-sm text-muted">Use barcode scanning or manual entry to build your ingredient list.</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start gap-3">
+                    <div class="primary-wash rounded-full w-8 h-8 flex items-center justify-center font-semibold text-sm">2</div>
+                    <div>
+                        <h3 class="font-semibold text-sm">Create Recipes</h3>
+                        <p class="text-sm text-muted">Build recipes and see real-time cost calculations for each meal.</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start gap-3">
+                    <div class="primary-wash rounded-full w-8 h-8 flex items-center justify-center font-semibold text-sm">3</div>
+                    <div>
+                        <h3 class="font-semibold text-sm">Track & Save</h3>
+                        <p class="text-sm text-muted">Monitor your spending patterns and discover ways to save money.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Value Proposition -->
+        <section class="success-wash border-app rounded-2xl p-4 text-center" aria-label="What You Get">
+            <h2 class="text-base font-semibold mb-2">What Makes MyFoodBudget Different</h2>
+            <p class="text-sm text-muted mb-3">Built for people who want to understand where their food money goes</p>
+            
+            <div class="grid grid-cols-3 gap-3 text-center">
+                <div>
+                    <div class="text-lg font-semibold success-text">📱</div>
+                    <div class="text-xs text-muted">Mobile First</div>
+                </div>
+                <div>
+                    <div class="text-lg font-semibold success-text">🔍</div>
+                    <div class="text-xs text-muted">Detailed Tracking</div>
+                </div>
+                <div>
+                    <div class="text-lg font-semibold success-text">📖</div>
+                    <div class="text-xs text-muted">Recipe Costing</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Final CTA -->
+        <section class="surface border-app rounded-2xl shadow-md p-4 text-center" aria-label="Get Started">
+            <h2 class="text-lg font-semibold mb-2">Ready to Take Control?</h2>
+            <p class="text-sm text-muted mb-4">Start tracking your food expenses today with MyFoodBudget.</p>
+            <a href="/register" class="btn-primary">Create Account</a>
+        </section>
+    </div>
 {% endblock %}

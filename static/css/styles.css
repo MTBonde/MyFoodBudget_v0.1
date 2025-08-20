@@ -435,3 +435,17 @@ p {
 
 /* Success state styling */
 .success-text { color: var(--success-600); }
+
+/* Additional utility classes for landing page */
+.w-8 { width: 2rem; }
+.h-8 { height: 2rem; }
+.text-2xl { font-size: 1.5rem; }
+.text-lg { font-size: 1.125rem; }
+.items-start { align-items: flex-start; }
+.justify-center { justify-content: center; }
+.mb-4 { margin-bottom: 1rem; }
+.mb-1 { margin-bottom: 0.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mt-1 { margin-top: 0.25rem; }
+.rounded-full { border-radius: 9999px; }
+.block { display: block; }
