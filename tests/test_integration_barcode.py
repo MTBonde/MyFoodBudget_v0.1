@@ -28,12 +28,24 @@ class TestBarcodeIntegration(unittest.TestCase):
         
         # Create all tables
         db.create_all()
+        
+        # Create test user
+        self.test_user = self._create_test_user()
     
     def tearDown(self):
         """Clean up after tests."""
         db.session.remove()
         db.drop_all()
         self.app_context.pop()
+    
+    def _create_test_user(self, username="testuser", email="test@example.com"):
+        """Helper method to create a test user."""
+        from models import User
+        from werkzeug.security import generate_password_hash
+        test_user = User(username=username, email=email, hash=generate_password_hash("password"))
+        db.session.add(test_user)
+        db.session.commit()
+        return test_user
     
     def test_full_barcode_workflow_with_real_data(self):
         """
@@ -68,7 +80,8 @@ class TestBarcodeIntegration(unittest.TestCase):
             quantity_unit=product_info['quantity_unit'],
             price=25.0,  # User-provided price
             barcode=test_barcode,
-            brand=product_info['brand']
+            brand=product_info['brand'],
+            user_id=self.test_user.id
         )
         
         # Assert 3: Ingredient created successfully
@@ -98,7 +111,8 @@ class TestBarcodeIntegration(unittest.TestCase):
             quantity_unit="g",
             price=20.0,
             barcode=test_barcode,
-            brand="Brand1"
+            brand="Brand1",
+            user_id=self.test_user.id
         )
         
         # Assert 1: First ingredient created
@@ -112,7 +126,8 @@ class TestBarcodeIntegration(unittest.TestCase):
                 quantity_unit="g", 
                 price=30.0,
                 barcode=test_barcode,  # Same barcode
-                brand="Brand2"
+                brand="Brand2",
+                user_id=self.test_user.id
             )
         
         # Assert 3: Only one ingredient in database
@@ -153,7 +168,8 @@ class TestBarcodeIntegration(unittest.TestCase):
                 quantity_unit="g",
                 price=15.0,
                 barcode=test_barcode,
-                brand="Test Brand"
+                brand="Test Brand",
+                user_id=self.test_user.id
             )
             
             # Assert: Ingredient created without nutrition data
@@ -171,6 +187,7 @@ class TestBarcodeIntegration(unittest.TestCase):
             price=10.0,
             barcode="1234567890128",
             brand="Test Brand",
+            user_id=self.test_user.id,
             calories=250.0,
             protein=15.0,
             carbohydrates=30.0,

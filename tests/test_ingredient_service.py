@@ -42,12 +42,12 @@ def test_create_ingredient_success(mock_add_ingredient, mock_scanner_class):
     mock_add_ingredient.return_value = mock_ingredient
 
     # Act
-    result = create_ingredient(test_name, test_quantity, test_unit, test_price)
+    result = create_ingredient(test_name, test_quantity, test_unit, test_price, user_id=1)
 
     # Assert
     mock_scanner_class.assert_called_once()
     mock_scanner.get_nutrition_data.assert_called_once_with(barcode=None, name=test_name)
-    mock_add_ingredient.assert_called_once_with(test_name, test_quantity, test_unit, test_price, None, None, mock_nutrition_data)
+    mock_add_ingredient.assert_called_once_with(test_name, test_quantity, test_unit, test_price, 1, None, None, mock_nutrition_data)
     assert result == mock_ingredient
 
 
@@ -91,10 +91,10 @@ def test_get_all_ingredients_success(mock_get_ingredients):
     mock_get_ingredients.return_value = [ingredient1, ingredient2]
 
     # Act
-    result = get_all_ingredients()
+    result = get_all_ingredients(user_id=1)
 
     # Assert
-    mock_get_ingredients.assert_called_once()
+    mock_get_ingredients.assert_called_once_with(1)
     assert result == [ingredient1, ingredient2]
 
 

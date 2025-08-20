@@ -118,7 +118,7 @@ def register_user(username, email, password):
         logger.error(f"Database error during user registration for {username}: {e}")
         raise DatabaseError("Registration failed due to database error", operation="register_user")
 
-def create_ingredient(name, quantity, quantity_unit, price, barcode=None, brand=None):
+def create_ingredient(name, quantity, quantity_unit, price, barcode=None, brand=None, user_id=None):
     """
     Create a new ingredient with nutrition data.
     
@@ -158,8 +158,9 @@ def create_ingredient(name, quantity, quantity_unit, price, barcode=None, brand=
         )
     
     try:
-        # Get current user from session
-        user_id = session.get('user_id')
+        # Get current user from session or use provided user_id (for testing)
+        if user_id is None:
+            user_id = session.get('user_id')
         if not user_id:
             raise AuthenticationError("User must be logged in to create ingredients")
         
@@ -183,7 +184,7 @@ def create_ingredient(name, quantity, quantity_unit, price, barcode=None, brand=
         logger.error(f"Error creating ingredient '{name}': {e}")
         raise ServiceError(f"Failed to create ingredient '{name}'", service="ingredient_service", operation="create_ingredient")
 
-def create_recipe(name, instructions, ingredients):
+def create_recipe(name, instructions, ingredients, user_id=None):
     """
     Create a new recipe with ingredients.
     
@@ -219,8 +220,9 @@ def create_recipe(name, instructions, ingredients):
             raise ValidationError(f"Ingredient {i+1} quantity purchased must be greater than 0")
     
     try:
-        # Get current user from session
-        user_id = session.get('user_id')
+        # Get current user from session or use provided user_id (for testing)
+        if user_id is None:
+            user_id = session.get('user_id')
         if not user_id:
             raise AuthenticationError("User must be logged in to create recipes")
         
@@ -256,7 +258,7 @@ def create_recipe(name, instructions, ingredients):
         logger.error(f"Error creating recipe '{name}': {e}")
         raise ServiceError(f"Failed to create recipe '{name}'", service="recipe_service", operation="create_recipe")
 
-def get_all_ingredients():
+def get_all_ingredients(user_id=None):
     """
     Retrieve all ingredients from the database for the current user.
     
@@ -268,8 +270,9 @@ def get_all_ingredients():
         DatabaseError: If database operation fails
     """
     try:
-        # Get current user from session
-        user_id = session.get('user_id')
+        # Get current user from session or use provided user_id (for testing)
+        if user_id is None:
+            user_id = session.get('user_id')
         if not user_id:
             raise AuthenticationError("User must be logged in to view ingredients")
         
@@ -283,7 +286,7 @@ def get_all_ingredients():
         logger.error(f"Error retrieving ingredients: {e}")
         raise DatabaseError("Failed to retrieve ingredients", operation="get_all_ingredients")
 
-def get_all_recipes():
+def get_all_recipes(user_id=None):
     """
     Retrieve all recipes from the database for the current user.
     
@@ -295,8 +298,9 @@ def get_all_recipes():
         DatabaseError: If database operation fails
     """
     try:
-        # Get current user from session
-        user_id = session.get('user_id')
+        # Get current user from session or use provided user_id (for testing)
+        if user_id is None:
+            user_id = session.get('user_id')
         if not user_id:
             raise AuthenticationError("User must be logged in to view recipes")
         
@@ -310,7 +314,7 @@ def get_all_recipes():
         logger.error(f"Error retrieving recipes: {e}")
         raise DatabaseError("Failed to retrieve recipes", operation="get_all_recipes")
 
-def get_all_recipes_with_ingredients():
+def get_all_recipes_with_ingredients(user_id=None):
     """
     Retrieve all recipes with their ingredients from the database for the current user.
     
@@ -322,8 +326,9 @@ def get_all_recipes_with_ingredients():
         DatabaseError: If database operation fails
     """
     try:
-        # Get current user from session
-        user_id = session.get('user_id')
+        # Get current user from session or use provided user_id (for testing)
+        if user_id is None:
+            user_id = session.get('user_id')
         if not user_id:
             raise AuthenticationError("User must be logged in to view recipes")
         
